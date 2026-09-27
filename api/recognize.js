@@ -1,124 +1,95 @@
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-haiku-4-5';
-const MAX_IMAGES = 6;
+// api/recognize.js — foto('s) → gestructureerde data via Claude vision.
+// Eén of meerdere foto's tegelijk, eventueel meerdere items per foto, of een
+// foto van een aankoopbon. Reageert altijd met een JSON-array, ook bij één
+// herkend item, zodat de client-afhandeling consistent blijft.
+import { roepClaudeAan, parseJsonUitAntwoord } from '../lib/anthropic.js';
+import { weigerIndienOngeldig } from '../lib/auth.js';
 
-const LABEL_PROMPT =
-  'These are one or more photos of wine bottles or wine labels. Multiple different bottles can appear in one photo, and the same bottle can appear in multiple photos. Return ONLY a valid JSON array, with no explanation and no markdown formatting. For each distinct wine you recognize, provide an object with exactly these fields: country (e.g. "Germany" or "France"), region (wine region/appellation), estate (name of the winery/producer), name (name of the cuvée/wine, without producer and without vintage), vintage (number, or null for a non-vintage wine), grapeVariety (grape or blend), color (exactly "White", "Rosé" or "Red"), sparkling (true or false — is it a sparkling wine), classification (quality classification, or "not stated on label" if not visible), quantity (always 1, regardless of how many photos of the same bottle there are), price (always 0). If the same wine appears in multiple photos, include it only once. Return an empty array [] if you cannot recognize any wine.';
+const SYSTEM_PROMPT = `
+Je herkent wijnflessen en/of aankoopbonnen van wijn op foto's, voor een
+persoonlijke wijnkelder-app. Er kunnen meerdere flessen op één foto staan, of
+meerdere foto's van dezelfde of verschillende flessen/bonnen.
 
-const RECEIPT_PROMPT =
-  'These are one or more photos of (parts of) the same receipt or invoice for a wine purchase, possibly listing multiple wines. Return ONLY a valid JSON array, with no explanation and no markdown formatting, with an object for each wine line on the receipt with these fields: country (guess based on shop/wine name if not explicitly stated), region (wine region, or "" if unknown), estate (name of the winery/producer, or "" if not distinguishable from the wine name), name (name of the wine/cuvée), vintage (number, or null if not stated), grapeVariety (if it can be inferred, otherwise ""), color (exactly "White", "Rosé" or "Red", estimated as best you can), sparkling (true or false), classification ("not stated on receipt" if this isn\'t on the receipt), quantity (number of bottles on this line), price (price PER BOTTLE — divide a total price by the quantity). Include every distinct wine line as a separate object in the array. Skip non-wine items (deposit, bags, discounts). Return an empty array [] if no wine lines can be recognized.';
+Geef ALTIJD alleen een kaal JSON-array terug, zonder inleidende tekst, zonder
+markdown-codeblok, zonder uitleg. Eén object per herkend item, ook als er maar
+één item is (dan een array met één object).
 
-function isAuthorized(req) {
-  const requiredPin = process.env.APP_PIN;
-  if (!requiredPin) return true; // not set yet: no lock active
-  return req.headers['x-app-pin'] === requiredPin;
+Elk object heeft deze velden (gebruik lege string / null waar onbekend, verzin
+NOOIT informatie die je niet kunt lezen):
+{
+  "naam": string,
+  "domein": string,       // producent / château / wijnhuis
+  "land": string,
+  "gebied": string,       // regio/appellatie
+  "jaartal": number | "",
+  "druivenras": string,
+  "kleur": "rood" | "wit" | "rosé" | "oranje" | "versterkt",
+  "mousserend": boolean,
+  "kwalificering": string, // bv. AOC, DOCG, Grand Cru, ...
+  "aantal": number,        // aantal flessen van dit item op de foto, standaard 1
+  "prijs": number | ""     // alleen invullen als een prijs letterlijk zichtbaar is (bv. op een bon)
 }
 
-function stripCodeFences(text) {
-  return text
-    .trim()
-    .replace(/^```json\s*/i, '')
-    .replace(/^```\s*/, '')
-    .replace(/```\s*$/, '')
-    .trim();
-}
+Bij twijfel over of iets een wijn is, of als je het etiket niet goed kunt
+lezen: laat het item liever weg dan te gokken. Als er niets betrouwbaar te
+herkennen is, geef dan een lege array [] terug.
+
+Extra streng voor "jaartal": vul dit UITSLUITEND in als het jaartal
+letterlijk en leesbaar op het etiket of de bon staat. Gok nooit een jaartal,
+en gebruik NOOIT het huidige jaar of een ander "waarschijnlijk" jaartal als
+vervanging wanneer het niet leesbaar is — laat het veld dan gewoon leeg ("").
+Een wijn zonder zichtbaar jaartal (of een niet-vintage wijn) hoort een lege
+string te krijgen, niet een geschat jaartal.
+`.trim();
 
 export default async function handler(req, res) {
+  if (weigerIndienOngeldig(req, res)) return;
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ fout: 'Methode niet toegestaan.' });
     return;
   }
 
-  if (!isAuthorized(req)) {
-    res.status(401).json({ error: 'Incorrect or missing PIN.' });
-    return;
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    res.status(503).json({ error: 'The Claude API key has not been set up yet (ANTHROPIC_API_KEY is missing in Vercel).' });
-    return;
-  }
-
-  let body;
   try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-  } catch (e) {
-    res.status(400).json({ error: 'Invalid request.' });
-    return;
-  }
-
-  const images = body && Array.isArray(body.images) ? body.images : [];
-  const mode = body && body.mode === 'receipt' ? 'receipt' : 'label';
-
-  if (images.length === 0) {
-    res.status(400).json({ error: 'No photo received.' });
-    return;
-  }
-  if (images.length > MAX_IMAGES) {
-    res.status(400).json({ error: `Maximum of ${MAX_IMAGES} photos at a time.` });
-    return;
-  }
-  for (const img of images) {
-    if (!img || typeof img.data !== 'string' || !img.data) {
-      res.status(400).json({ error: 'One of the photos could not be read.' });
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const afbeeldingen = Array.isArray(body?.afbeeldingen) ? body.afbeeldingen : [];
+    if (afbeeldingen.length === 0) {
+      res.status(400).json({ fout: 'Geen afbeeldingen meegestuurd.' });
       return;
     }
-  }
 
-  const promptText = mode === 'receipt' ? RECEIPT_PROMPT : LABEL_PROMPT;
-  const content = [
-    ...images.map((img) => ({
-      type: 'image',
-      source: { type: 'base64', media_type: img.mediaType || 'image/jpeg', data: img.data },
-    })),
-    { type: 'text', text: promptText },
-  ];
+    const imageBlokken = afbeeldingen.map((dataUrl) => naarImageBlock(dataUrl)).filter(Boolean);
+    if (imageBlokken.length === 0) {
+      res.status(400).json({ fout: 'Kon geen geldige afbeeldingen verwerken.' });
+      return;
+    }
 
-  try {
-    const claudeRes = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 4096,
-        messages: [{ role: 'user', content }],
-      }),
+    const antwoord = await roepClaudeAan({
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            ...imageBlokken,
+            { type: 'text', text: 'Herken de wijn(en) op deze foto of fotos, en geef het JSON-array terug.' },
+          ],
+        },
+      ],
+      maxTokens: 2000,
     });
 
-    const claudeData = await claudeRes.json();
-
-    if (!claudeRes.ok) {
-      const message = (claudeData && claudeData.error && claudeData.error.message) || `Claude API error (${claudeRes.status})`;
-      res.status(claudeRes.status === 401 ? 503 : 502).json({ error: message });
-      return;
-    }
-
-    const textBlock = (claudeData.content || []).find((b) => b.type === 'text');
-    if (!textBlock) {
-      res.status(502).json({ error: 'Unexpected response from Claude.' });
-      return;
-    }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(stripCodeFences(textBlock.text));
-    } catch (e) {
-      res.status(502).json({ error: 'Could not read the response from Claude. Try again with a clearer photo.' });
-      return;
-    }
-
-    if (!Array.isArray(parsed)) {
-      res.status(502).json({ error: 'Unexpected format from Claude — expected a list of wines.' });
-      return;
-    }
-
-    res.status(200).json({ items: parsed });
-  } catch (e) {
-    res.status(500).json({ error: e.message || 'Something went wrong while recognizing the photos.' });
+    const kandidaten = parseJsonUitAntwoord(antwoord);
+    res.status(200).json(Array.isArray(kandidaten) ? kandidaten : []);
+  } catch (fout) {
+    res.status(500).json({ fout: fout.message || 'Herkenning is mislukt.' });
   }
+}
+
+function naarImageBlock(dataUrl) {
+  const match = /^data:(image\/[a-zA-Z+]+);base64,(.+)$/.exec(dataUrl || '');
+  if (!match) return null;
+  const [, mediaType, base64Data] = match;
+  return {
+    type: 'image',
+    source: { type: 'base64', media_type: mediaType, data: base64Data },
+  };
 }
