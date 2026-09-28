@@ -6,17 +6,17 @@ export function renderPairingModal({ status = 'idle', vraag = '', suggesties = [
     <div class="modal-backdrop" data-action="close-modal">
       <div class="modal modal-pairing" data-stop-propagation>
         <div class="modal-header">
-          <h2>What should I drink with this?</h2>
-          <button class="icon-btn" data-action="close-modal" aria-label="Close">✕</button>
+          <h2>Wat drink ik hierbij?</h2>
+          <button class="icon-btn" data-action="close-modal" aria-label="Sluiten">✕</button>
         </div>
         <div class="modal-body">
           <form id="pairing-form">
             <label class="field field-full">
-              <span class="field-label">Describe the occasion or the dish</span>
-              <textarea id="pairing-vraag" rows="2" placeholder="e.g. 'having grilled salmon with lemon tonight'">${escapeHtml(vraag)}</textarea>
+              <span class="field-label">Beschrijf de gelegenheid of het gerecht</span>
+              <textarea id="pairing-vraag" rows="2" placeholder="bv. 'dit eten we vanavond: gegrilde zalm met citroen'">${escapeHtml(vraag)}</textarea>
             </label>
             <button type="submit" class="btn btn-primary" ${status === 'bezig' ? 'disabled' : ''}>
-              ${status === 'bezig' ? 'Searching your cellar…' : 'Suggest'}
+              ${status === 'bezig' ? 'Zoeken in je kelder…' : 'Suggereer'}
             </button>
           </form>
 
@@ -31,7 +31,7 @@ export function renderPairingModal({ status = 'idle', vraag = '', suggesties = [
 
 function renderSuggesties(suggesties) {
   if (suggesties.length === 0) {
-    return '<p class="detail-empty">No good match found in your current stock.</p>';
+    return '<p class="detail-empty">Geen goede match gevonden in je huidige voorraad.</p>';
   }
   return `
     <div class="suggestie-lijst">

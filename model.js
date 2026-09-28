@@ -44,7 +44,7 @@ export function schatDrinkvenster(wijn) {
  */
 export function berekenRijping(wijn, referentiejaar = new Date().getFullYear()) {
   if (!wijn.jaartal) {
-    return { percent: 0, status: 'onbekend', label: 'Vintage unknown', ageJaren: null };
+    return { percent: 0, status: 'onbekend', label: 'Jaartal onbekend', ageJaren: null };
   }
   const ageJaren = Math.max(0, referentiejaar - Number(wijn.jaartal));
   const { minJaren, maxJaren } = schatDrinkvenster(wijn);
@@ -55,17 +55,17 @@ export function berekenRijping(wijn, referentiejaar = new Date().getFullYear()) 
 
   if (ageJaren < minJaren) {
     status = 'jong';
-    label = `Still young — ${minJaren - ageJaren} yr until its window`;
+    label = `Nog jong — over ${minJaren - ageJaren} jr in het venster`;
     percent = maxJaren > 0 ? Math.round((ageJaren / minJaren) * 33) : 0;
   } else if (ageJaren <= maxJaren) {
     status = 'optimaal';
     const resterend = maxJaren - ageJaren;
-    label = resterend <= 1 ? 'At its best now — drink soon' : 'In its optimal drinking window';
+    label = resterend <= 1 ? 'Nu op zijn best — drink binnenkort' : 'In het optimale drinkvenster';
     const spanne = Math.max(1, maxJaren - minJaren);
     percent = 33 + Math.round(((ageJaren - minJaren) / spanne) * 50);
   } else {
     status = 'over-piek';
-    label = `${ageJaren - maxJaren} yr past its estimated window`;
+    label = `${ageJaren - maxJaren} jr voorbij het geschatte venster`;
     percent = 90 + Math.min(10, (ageJaren - maxJaren) * 2);
   }
 
@@ -84,7 +84,7 @@ export function sorteerItems(items, sortering) {
   const kopie = [...items];
   switch (sortering) {
     case 'naam':
-      return kopie.sort((a, b) => a.naam.localeCompare(b.naam, 'en'));
+      return kopie.sort((a, b) => a.naam.localeCompare(b.naam, 'nl'));
     case 'prijs-hoog':
       return kopie.sort((a, b) => (Number(b.prijs) || 0) - (Number(a.prijs) || 0));
     case 'prijs-laag':
@@ -112,9 +112,9 @@ export function telPerKleur(items) {
 export function bouwHierarchie(items) {
   const boom = {};
   for (const item of items) {
-    const land = item.land || 'Unknown country';
-    const gebied = item.gebied || 'Unknown region';
-    const producent = item.domein || 'Unknown producer';
+    const land = item.land || 'Onbekend land';
+    const gebied = item.gebied || 'Onbekend gebied';
+    const producent = item.domein || 'Onbekende producent';
     boom[land] ??= {};
     boom[land][gebied] ??= {};
     boom[land][gebied][producent] ??= [];

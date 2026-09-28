@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       if (!body || !Array.isArray(body.inventory)) {
-        res.status(400).json({ fout: 'Invalid state: "inventory" is missing or not an array.' });
+        res.status(400).json({ fout: 'Ongeldige state: "inventory" ontbreekt of is geen array.' });
         return;
       }
       await bewaarState(body);
@@ -23,8 +23,8 @@ export default async function handler(req, res) {
       return;
     }
 
-    res.status(405).json({ fout: 'Method not allowed.' });
+    res.status(405).json({ fout: 'Methode niet toegestaan.' });
   } catch (fout) {
-    res.status(500).json({ fout: fout.message || 'Unknown server error.' });
+    res.status(500).json({ fout: fout.message || 'Onbekende serverfout.' });
   }
 }

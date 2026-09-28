@@ -14,7 +14,7 @@ export function renderItemCard(wijn) {
       <div class="wine-card-top">
         <span class="wine-color-dot wine-color-${escapeHtml(wijn.kleur)}" aria-hidden="true">${icoon}</span>
         <div class="wine-card-heading">
-          <h3 class="wine-name">${escapeHtml(wijn.naam) || 'Unnamed item'}</h3>
+          <h3 class="wine-name">${escapeHtml(wijn.naam) || 'Naamloos item'}</h3>
           ${subtitel ? `<p class="wine-sub">${subtitel}</p>` : ''}
           ${herkomst ? `<p class="wine-origin">${herkomst}</p>` : ''}
         </div>
@@ -29,9 +29,9 @@ export function renderItemCard(wijn) {
       <div class="wine-card-bottom">
         <span class="wine-price">${formatteerPrijs(wijn.prijs)}</span>
         <div class="wine-card-actions">
-          <button class="icon-btn" data-action="adjust" data-id="${escapeHtml(wijn.id)}" data-delta="-1" aria-label="Decrease quantity">−</button>
-          <button class="icon-btn" data-action="adjust" data-id="${escapeHtml(wijn.id)}" data-delta="1" aria-label="Increase quantity">+</button>
-          <button class="icon-btn" data-action="drink" data-id="${escapeHtml(wijn.id)}" aria-label="Mark as finished">✓</button>
+          <button class="icon-btn" data-action="adjust" data-id="${escapeHtml(wijn.id)}" data-delta="-1" aria-label="Aantal verlagen">−</button>
+          <button class="icon-btn" data-action="adjust" data-id="${escapeHtml(wijn.id)}" data-delta="1" aria-label="Aantal verhogen">+</button>
+          <button class="icon-btn" data-action="drink" data-id="${escapeHtml(wijn.id)}" aria-label="Markeer als opgedronken">✓</button>
         </div>
       </div>
     </article>

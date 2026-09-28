@@ -10,7 +10,7 @@ function kvConfig() {
   const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
     throw new Error(
-      'No KV environment variables found. Connect a Vercel KV or Upstash Redis database to this project.',
+      'Geen KV-omgevingsvariabelen gevonden. Koppel een Vercel KV- of Upstash Redis-database aan dit project.',
     );
   }
   return { url, token };
@@ -27,7 +27,7 @@ async function kvCommand(...command) {
     body: JSON.stringify(command),
   });
   if (!res.ok) {
-    throw new Error(`KV request failed (${res.status})`);
+    throw new Error(`KV-aanroep mislukt (${res.status})`);
   }
   const data = await res.json();
   return data.result;

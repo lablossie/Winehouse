@@ -6,46 +6,46 @@ import { roepClaudeAan, parseJsonUitAntwoord } from '../lib/anthropic.js';
 import { weigerIndienOngeldig } from '../lib/auth.js';
 
 const SYSTEM_PROMPT = `
-You recognize wine bottles and/or wine purchase receipts in photos, for a
-personal wine cellar app. There may be multiple bottles in one photo, or
-multiple photos of the same or different bottles/receipts.
+Je herkent wijnflessen en/of aankoopbonnen van wijn op foto's, voor een
+persoonlijke wijnkelder-app. Er kunnen meerdere flessen op één foto staan, of
+meerdere foto's van dezelfde of verschillende flessen/bonnen.
 
-ALWAYS respond with ONLY a bare JSON array, no introductory text, no
-markdown code block, no explanation. One object per recognized item, even if
-there's only one item (then an array with one object).
+Geef ALTIJD alleen een kaal JSON-array terug, zonder inleidende tekst, zonder
+markdown-codeblok, zonder uitleg. Eén object per herkend item, ook als er maar
+één item is (dan een array met één object).
 
-Each object has these fields (use empty string / null where unknown, NEVER
-make up information you cannot read):
+Elk object heeft deze velden (gebruik lege string / null waar onbekend, verzin
+NOOIT informatie die je niet kunt lezen):
 {
   "naam": string,
-  "domein": string,       // producer / château / winery
+  "domein": string,       // producent / château / wijnhuis
   "land": string,
-  "gebied": string,       // region/appellation
+  "gebied": string,       // regio/appellatie
   "jaartal": number | "",
   "druivenras": string,
   "kleur": "rood" | "wit" | "rosé" | "oranje" | "versterkt",
   "mousserend": boolean,
-  "kwalificering": string, // e.g. AOC, DOCG, Grand Cru, ...
-  "aantal": number,        // number of bottles of this item in the photo, default 1
-  "prijs": number | ""     // only fill in if a price is literally visible (e.g. on a receipt)
+  "kwalificering": string, // bv. AOC, DOCG, Grand Cru, ...
+  "aantal": number,        // aantal flessen van dit item op de foto, standaard 1
+  "prijs": number | ""     // alleen invullen als een prijs letterlijk zichtbaar is (bv. op een bon)
 }
 
-If in doubt whether something is a wine, or if you cannot read the label
-well: leave the item out rather than guessing. If nothing can be reliably
-recognized, return an empty array [].
+Bij twijfel over of iets een wijn is, of als je het etiket niet goed kunt
+lezen: laat het item liever weg dan te gokken. Als er niets betrouwbaar te
+herkennen is, geef dan een lege array [] terug.
 
-Extra strict for "jaartal" (vintage): fill this in ONLY if the vintage is
-literally and legibly printed on the label or receipt. Never guess a
-vintage, and NEVER use the current year or another "likely" year as a
-substitute when it isn't legible — leave the field empty ("") instead.
-A wine with no visible vintage (or a non-vintage wine) should get an empty
-string, not an estimated year.
+Extra streng voor "jaartal": vul dit UITSLUITEND in als het jaartal
+letterlijk en leesbaar op het etiket of de bon staat. Gok nooit een jaartal,
+en gebruik NOOIT het huidige jaar of een ander "waarschijnlijk" jaartal als
+vervanging wanneer het niet leesbaar is — laat het veld dan gewoon leeg ("").
+Een wijn zonder zichtbaar jaartal (of een niet-vintage wijn) hoort een lege
+string te krijgen, niet een geschat jaartal.
 `.trim();
 
 export default async function handler(req, res) {
   if (weigerIndienOngeldig(req, res)) return;
   if (req.method !== 'POST') {
-    res.status(405).json({ fout: 'Method not allowed.' });
+    res.status(405).json({ fout: 'Methode niet toegestaan.' });
     return;
   }
 
@@ -53,13 +53,13 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const afbeeldingen = Array.isArray(body?.afbeeldingen) ? body.afbeeldingen : [];
     if (afbeeldingen.length === 0) {
-      res.status(400).json({ fout: 'No images sent.' });
+      res.status(400).json({ fout: 'Geen afbeeldingen meegestuurd.' });
       return;
     }
 
     const imageBlokken = afbeeldingen.map((dataUrl) => naarImageBlock(dataUrl)).filter(Boolean);
     if (imageBlokken.length === 0) {
-      res.status(400).json({ fout: 'Could not process any valid images.' });
+      res.status(400).json({ fout: 'Kon geen geldige afbeeldingen verwerken.' });
       return;
     }
 
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
           role: 'user',
           content: [
             ...imageBlokken,
-            { type: 'text', text: 'Recognize the wine(s) in this photo or these photos, and return the JSON array.' },
+            { type: 'text', text: 'Herken de wijn(en) op deze foto of fotos, en geef het JSON-array terug.' },
           ],
         },
       ],
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
     const kandidaten = parseJsonUitAntwoord(antwoord);
     res.status(200).json(Array.isArray(kandidaten) ? kandidaten : []);
   } catch (fout) {
-    res.status(500).json({ fout: fout.message || 'Recognition failed.' });
+    res.status(500).json({ fout: fout.message || 'Herkenning is mislukt.' });
   }
 }
 

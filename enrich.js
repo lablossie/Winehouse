@@ -11,38 +11,38 @@ import { roepClaudeAan, parseJsonUitAntwoord } from '../lib/anthropic.js';
 import { weigerIndienOngeldig } from '../lib/auth.js';
 
 const SYSTEM_PROMPT = `
-You are a wine researcher for a personal wine cellar app. You get data for
-one wine (possibly incomplete or partly incorrect, since it comes from photo
-recognition of a label). Look it up and provide:
+Je bent een wijn-researcher voor een persoonlijke wijnkelder-app. Je krijgt
+gegevens van één wijn (mogelijk onvolledig of deels onjuist, want afkomstig
+uit foto-herkenning van een etiket). Zoek het op en lever:
 
-1. "omschrijving": 2-4 sentences of general background information about this
-   wine (producer, style, reputation) — in English.
-2. "smaakprofiel": an array of 3-6 short tasting notes (e.g. "cherry",
-   "vanilla", "firm tannins").
-3. "druivenras": the corrected/verified grape variety, ONLY if you can
-   determine this with reasonable confidence — otherwise an empty string.
-   Photo recognition often misreads this field, so actively correct it if you
-   find something different from what was supplied.
-4. "gebied": same logic as grape variety — corrected/verified region or
-   sub-region, empty string if uncertain.
-5. "geschattePrijs": a realistic average retail price in euros as a number
-   (without currency symbol), ONLY if you're confident about this — otherwise
-   leave empty. Only fill this in as a supplement, never to overwrite an
-   existing price.
+1. "omschrijving": 2-4 zinnen algemene achtergrondinformatie over deze wijn
+   (producent, stijl, bekendheid) — in het Nederlands.
+2. "smaakprofiel": een array van 3-6 korte kenmerken (bv. "kersen", "vanille",
+   "stevige tannines").
+3. "druivenras": het gecorrigeerde/geverifieerde druivenras, ALLEEN als je dit
+   met redelijke zekerheid kunt vaststellen — anders een lege string. Foto-
+   herkenning leest dit veld vaak verkeerd; corrigeer het dus actief als je
+   iets anders vindt dan wat is meegegeven.
+4. "gebied": dezelfde logica als druivenras — gecorrigeerd/geverifieerd gebied
+   of subregio, lege string als onzeker.
+5. "geschattePrijs": een realistische gemiddelde winkelprijs in euro's als
+   getal (zonder valutateken), ALLEEN als je hier vertrouwen in hebt — anders
+   leeg laten. Vul dit sowieso alleen in ter aanvulling, nooit om een
+   bestaande prijs te overschrijven.
 
-As your VERY LAST message, respond with ONLY a bare JSON object, no
-introductory text, no markdown code block, and no source citations or
-citation formatting in the text fields themselves:
+Geef als ALLERLAATSTE bericht UITSLUITEND een kaal JSON-object terug, zonder
+inleidende tekst, zonder markdown-codeblok, en zonder enige bronvermelding of
+citatie-opmaak in de tekstvelden zelf:
 { "omschrijving": string, "smaakprofiel": string[], "druivenras": string, "gebied": string, "geschattePrijs": number | "" }
 
-Fill in empty strings/arrays if you find nothing reliable online — never make
-up information.
+Vul lege strings/arrays in als je online niets betrouwbaars vindt — verzin
+nooit informatie.
 `.trim();
 
 export default async function handler(req, res) {
   if (weigerIndienOngeldig(req, res)) return;
   if (req.method !== 'POST') {
-    res.status(405).json({ fout: 'Method not allowed.' });
+    res.status(405).json({ fout: 'Methode niet toegestaan.' });
     return;
   }
 
@@ -50,18 +50,18 @@ export default async function handler(req, res) {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const item = body?.item;
     if (!item || !item.naam) {
-      res.status(400).json({ fout: 'No (valid) item sent.' });
+      res.status(400).json({ fout: 'Geen (geldig) item meegestuurd.' });
       return;
     }
 
     const itemBeschrijving = [
-      `Name: ${item.naam}`,
-      item.domein && `Producer: ${item.domein}`,
-      item.land && `Country: ${item.land}`,
-      item.gebied && `Region: ${item.gebied}`,
-      item.jaartal && `Vintage: ${item.jaartal}`,
-      item.druivenras && `Grape variety: ${item.druivenras}`,
-      item.kwalificering && `Classification: ${item.kwalificering}`,
+      `Naam: ${item.naam}`,
+      item.domein && `Producent: ${item.domein}`,
+      item.land && `Land: ${item.land}`,
+      item.gebied && `Gebied: ${item.gebied}`,
+      item.jaartal && `Jaartal: ${item.jaartal}`,
+      item.druivenras && `Druivenras: ${item.druivenras}`,
+      item.kwalificering && `Kwalificering: ${item.kwalificering}`,
     ].filter(Boolean).join('\n');
 
     const antwoord = await roepClaudeAan({
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'user',
-          content: `Look up this wine and provide the requested JSON:\n\n${itemBeschrijving}`,
+          content: `Zoek deze wijn op en lever de gevraagde JSON:\n\n${itemBeschrijving}`,
         },
       ],
       tools: [{ type: 'web_search_20250305', name: 'web_search' }],
@@ -85,6 +85,6 @@ export default async function handler(req, res) {
       geschattePrijs: resultaat.geschattePrijs || '',
     });
   } catch (fout) {
-    res.status(500).json({ fout: fout.message || 'Enrichment failed.' });
+    res.status(500).json({ fout: fout.message || 'Verrijken is mislukt.' });
   }
 }

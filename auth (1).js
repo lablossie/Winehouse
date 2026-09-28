@@ -8,6 +8,6 @@ export function pinIsGeldig(req) {
 
 export function weigerIndienOngeldig(req, res) {
   if (pinIsGeldig(req)) return false;
-  res.status(401).json({ fout: 'Incorrect or missing PIN.' });
+  res.status(401).json({ fout: 'Onjuiste of ontbrekende pincode.' });
   return true;
 }

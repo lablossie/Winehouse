@@ -6,28 +6,28 @@ import { roepClaudeAan, parseJsonUitAntwoord } from '../lib/anthropic.js';
 import { weigerIndienOngeldig } from '../lib/auth.js';
 
 const SYSTEM_PROMPT = `
-You are a sommelier assistant for a personal wine cellar app. You get a
-description of an occasion or dish, plus a list of wines currently in stock
-(with their ID).
+Je bent een sommelier-assistent voor een persoonlijke wijnkelder-app. Je krijgt
+een beschrijving van een gelegenheid of gerecht, plus een lijst van wijnen die
+op dit moment op voorraad zijn (met hun ID).
 
-Choose 1 to 3 wines EXCLUSIVELY from the supplied list that fit best. Never
-invent a wine that isn't in the list, and always use the literal "id" field
-from the list.
+Kies 1 tot 3 wijnen UITSLUITEND uit de meegestuurde lijst die het beste
+passen. Verzin nooit een wijn die niet in de lijst staat, en gebruik altijd
+het letterlijke "id"-veld uit de lijst.
 
-ALWAYS respond with ONLY a bare JSON array, no introductory text and no
-markdown code block. One object per recommendation:
+Geef ALTIJD alleen een kaal JSON-array terug, zonder inleidende tekst en
+zonder markdown-codeblok. Eén object per aanbeveling:
 { "id": string, "reden": string }
-The "reden" (reason) is a short, concrete justification (max. ~20 words) for
-why this wine fits the requested occasion.
+De "reden" is een korte, concrete onderbouwing (max. ~20 woorden) waarom deze
+wijn past bij de gevraagde gelegenheid.
 
-If nothing in the list fits well, return an empty array [] — don't invent a
-weak match.
+Als niets uit de lijst goed past, geef dan een lege array [] terug — verzin
+geen zwakke match.
 `.trim();
 
 export default async function handler(req, res) {
   if (weigerIndienOngeldig(req, res)) return;
   if (req.method !== 'POST') {
-    res.status(405).json({ fout: 'Method not allowed.' });
+    res.status(405).json({ fout: 'Methode niet toegestaan.' });
     return;
   }
 
@@ -37,7 +37,7 @@ export default async function handler(req, res) {
     const voorraad = Array.isArray(body?.voorraad) ? body.voorraad : [];
 
     if (!vraag) {
-      res.status(400).json({ fout: 'No question sent.' });
+      res.status(400).json({ fout: 'Geen vraag meegestuurd.' });
       return;
     }
     if (voorraad.length === 0) {
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
       messages: [
         {
           role: 'user',
-          content: `Occasion/dish: ${vraag}\n\nStock (JSON):\n${JSON.stringify(voorraad)}`,
+          content: `Gelegenheid/gerecht: ${vraag}\n\nVoorraad (JSON):\n${JSON.stringify(voorraad)}`,
         },
       ],
       maxTokens: 800,
@@ -62,6 +62,6 @@ export default async function handler(req, res) {
 
     res.status(200).json(suggesties);
   } catch (fout) {
-    res.status(500).json({ fout: fout.message || 'Could not fetch a suggestion.' });
+    res.status(500).json({ fout: fout.message || 'Suggestie ophalen is mislukt.' });
   }
 }

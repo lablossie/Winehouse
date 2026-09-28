@@ -3,13 +3,13 @@ import { escapeHtml } from '../utils.js';
 import { KLEUREN, telPerKleur, sorteerItems, bouwHierarchie } from '../model.js';
 import { renderItemCard, renderLegeStaat } from './itemCard.js';
 
-const KLEUR_LABEL = { rood: 'Red', wit: 'White', rosé: 'Rosé', oranje: 'Orange', versterkt: 'Fortified' };
+const KLEUR_LABEL = { rood: 'Rood', wit: 'Wit', rosé: 'Rosé', oranje: 'Oranje', versterkt: 'Versterkt' };
 const SORT_OPTIES = [
   { id: 'naam', label: 'A-Z' },
-  { id: 'jaartal', label: 'Vintage' },
-  { id: 'prijs-hoog', label: 'Price (high-low)' },
-  { id: 'prijs-laag', label: 'Price (low-high)' },
-  { id: 'urgentie', label: 'Urgency' },
+  { id: 'jaartal', label: 'Jaartal' },
+  { id: 'prijs-hoog', label: 'Prijs (hoog-laag)' },
+  { id: 'prijs-laag', label: 'Prijs (laag-hoog)' },
+  { id: 'urgentie', label: 'Urgentie' },
 ];
 
 function pasZoektermToe(items, zoekterm) {
@@ -25,7 +25,7 @@ function renderKleurFilters(items, actieveKleur) {
   const tellingen = telPerKleur(items);
   const alleChip = `
     <button class="filter-chip ${actieveKleur === 'alle' ? 'active' : ''}" data-action="filter-kleur" data-kleur="alle">
-      All <span class="chip-count">${items.length}</span>
+      Alle <span class="chip-count">${items.length}</span>
     </button>
   `;
   const chips = KLEUREN.map(
@@ -53,7 +53,7 @@ function renderHierarchieNav(items, pad) {
   const [land, gebied, producent] = pad;
 
   if (!land) {
-    const landen = Object.keys(boom).sort((a, b) => a.localeCompare(b, 'en'));
+    const landen = Object.keys(boom).sort((a, b) => a.localeCompare(b, 'nl'));
     return `
       <div class="hier-crumbs"></div>
       <div class="hier-list">
@@ -68,7 +68,7 @@ function renderHierarchieNav(items, pad) {
   }
 
   if (land && !gebied) {
-    const gebieden = Object.keys(boom[land] || {}).sort((a, b) => a.localeCompare(b, 'en'));
+    const gebieden = Object.keys(boom[land] || {}).sort((a, b) => a.localeCompare(b, 'nl'));
     return `
       ${renderCrumbs(pad)}
       <div class="hier-list">
@@ -83,7 +83,7 @@ function renderHierarchieNav(items, pad) {
   }
 
   if (land && gebied && !producent) {
-    const producenten = Object.keys((boom[land] || {})[gebied] || {}).sort((a, b) => a.localeCompare(b, 'en'));
+    const producenten = Object.keys((boom[land] || {})[gebied] || {}).sort((a, b) => a.localeCompare(b, 'nl'));
     return `
       ${renderCrumbs(pad)}
       <div class="hier-list">
@@ -100,14 +100,14 @@ function renderHierarchieNav(items, pad) {
   const bladItems = (((boom[land] || {})[gebied] || {})[producent] || []);
   return `
     ${renderCrumbs(pad)}
-    <div class="card-grid">${bladItems.map(renderItemCard).join('') || renderLegeStaat('No items', 'This producer has no items in stock yet.')}</div>
+    <div class="card-grid">${bladItems.map(renderItemCard).join('') || renderLegeStaat('Geen items', 'Deze producent heeft nog geen items in voorraad.')}</div>
   `;
 }
 
 function renderCrumbs(pad) {
   const [land, gebied, producent] = pad;
   const delen = [
-    { label: 'Countries', land: '', gebied: '', producent: '' },
+    { label: 'Landen', land: '', gebied: '', producent: '' },
     land && { label: land, land, gebied: '', producent: '' },
     gebied && { label: gebied, land, gebied, producent: '' },
     producent && { label: producent, land, gebied, producent },
@@ -130,19 +130,19 @@ export function renderVoorraadTab(state, ui) {
 
   const viewToggle = `
     <div class="view-toggle">
-      <button class="toggle-btn ${ui.viewMode === 'kleur' ? 'active' : ''}" data-action="set-viewmode" data-mode="kleur">By color</button>
-      <button class="toggle-btn ${ui.viewMode === 'hierarchie' ? 'active' : ''}" data-action="set-viewmode" data-mode="hierarchie">By origin</button>
+      <button class="toggle-btn ${ui.viewMode === 'kleur' ? 'active' : ''}" data-action="set-viewmode" data-mode="kleur">Per kleur</button>
+      <button class="toggle-btn ${ui.viewMode === 'hierarchie' ? 'active' : ''}" data-action="set-viewmode" data-mode="hierarchie">Per herkomst</button>
     </div>
   `;
 
   if (ui.zoekterm.trim()) {
-    // While searching: always a flat list, regardless of viewMode.
+    // Tijdens zoeken: altijd platte lijst, ongeacht viewMode.
     const gevonden = sorteerItems(alles, ui.sortering);
     return `
       ${viewToggle}
       <div class="filter-row-placeholder"></div>
-      <p class="result-count">${gevonden.length} result${gevonden.length === 1 ? '' : 's'} for "${escapeHtml(ui.zoekterm)}"</p>
-      <div class="card-grid">${gevonden.map(renderItemCard).join('') || renderLegeStaat('Nothing found', 'Try a different search term.')}</div>
+      <p class="result-count">${gevonden.length} resultaat${gevonden.length === 1 ? '' : 'en'} voor "${escapeHtml(ui.zoekterm)}"</p>
+      <div class="card-grid">${gevonden.map(renderItemCard).join('') || renderLegeStaat('Niets gevonden', 'Probeer een andere zoekterm.')}</div>
     `;
   }
 
@@ -158,7 +158,7 @@ export function renderVoorraadTab(state, ui) {
     ${renderKleurFilters(alles, ui.kleurFilter)}
     <div class="sort-row">${renderSortSelect(ui.sortering)}</div>
     <div class="card-grid">
-      ${gesorteerd.map(renderItemCard).join('') || renderLegeStaat('No wine yet', 'Add your first bottle with the + button or via a photo.', 'Add item', 'open-add')}
+      ${gesorteerd.map(renderItemCard).join('') || renderLegeStaat('Nog geen wijn', 'Voeg je eerste fles toe met de + knop of via een foto.', 'Item toevoegen', 'open-add')}
     </div>
   `;
 }

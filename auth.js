@@ -44,9 +44,9 @@ export function renderPinScherm({ foutmelding = '', bezig = false } = {}) {
   return `
     <div class="pin-gate">
       <div class="pin-card">
-        <p class="pin-eyebrow">Wine Cellar</p>
-        <h1 class="pin-title">Welcome back</h1>
-        <p class="pin-sub">Enter your household's access code.</p>
+        <p class="pin-eyebrow">Wijnkelder</p>
+        <h1 class="pin-title">Welkom terug</h1>
+        <p class="pin-sub">Voer de toegangscode van je huishouden in.</p>
         <form id="pin-form" autocomplete="off">
           <input
             type="password"
@@ -59,7 +59,7 @@ export function renderPinScherm({ foutmelding = '', bezig = false } = {}) {
           />
           ${foutmelding ? `<p class="pin-error">${foutmelding}</p>` : ''}
           <button type="submit" class="btn btn-primary pin-submit" ${bezig ? 'disabled' : ''}>
-            ${bezig ? 'Checking…' : 'Unlock'}
+            ${bezig ? 'Controleren…' : 'Ontgrendel'}
           </button>
         </form>
       </div>

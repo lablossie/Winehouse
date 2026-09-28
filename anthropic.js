@@ -11,7 +11,7 @@ export const MODEL = 'claude-haiku-4-5-20251001';
 export async function roepClaudeAan({ system, messages, tools, maxTokens = 1500 }) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY is missing from the environment variables.');
+    throw new Error('ANTHROPIC_API_KEY ontbreekt in de omgevingsvariabelen.');
   }
 
   const res = await fetch(API_URL, {
@@ -32,7 +32,7 @@ export async function roepClaudeAan({ system, messages, tools, maxTokens = 1500 
 
   if (!res.ok) {
     const tekst = await res.text().catch(() => '');
-    throw new Error(`Claude API error (${res.status}): ${tekst.slice(0, 300)}`);
+    throw new Error(`Claude API-fout (${res.status}): ${tekst.slice(0, 300)}`);
   }
 
   const data = await res.json();

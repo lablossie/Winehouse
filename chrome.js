@@ -2,22 +2,22 @@
 import { escapeHtml } from '../utils.js';
 
 const TABS = [
-  { id: 'voorraad', label: 'Cellar' },
-  { id: 'onlangs', label: 'Recently added' },
-  { id: 'drink-binnenkort', label: 'Drink soon' },
-  { id: 'historie', label: 'History' },
+  { id: 'voorraad', label: 'Voorraad' },
+  { id: 'onlangs', label: 'Onlangs toegevoegd' },
+  { id: 'drink-binnenkort', label: 'Drink binnenkort' },
+  { id: 'historie', label: 'Historie' },
 ];
 
 export function renderHeader(ui) {
   return `
     <header class="app-header">
       <div class="app-title-row">
-        <h1 class="app-title">Wine Cellar</h1>
+        <h1 class="app-title">Wijnkelder</h1>
         <div class="header-actions">
-          <button class="icon-btn" data-action="open-pairing" aria-label="What should I drink with this?">🍽</button>
-          <button class="icon-btn" data-action="export-csv" aria-label="Export as CSV">⇩</button>
-          <button class="icon-btn" data-action="open-photo-import" aria-label="Recognize from photo">📷</button>
-          <button class="btn btn-primary btn-add" data-action="open-add">+ Add</button>
+          <button class="icon-btn" data-action="open-pairing" aria-label="Wat drink ik hierbij?">🍽</button>
+          <button class="icon-btn" data-action="export-csv" aria-label="Exporteer als CSV">⇩</button>
+          <button class="icon-btn" data-action="open-photo-import" aria-label="Herken via foto">📷</button>
+          <button class="btn btn-primary btn-add" data-action="open-add">+ Toevoegen</button>
         </div>
       </div>
       <div class="search-row">
@@ -26,7 +26,7 @@ export function renderHeader(ui) {
           id="search-input"
           data-focus-key="search-input"
           class="search-input"
-          placeholder="Search by name, producer or grape…"
+          placeholder="Zoek op naam, producent of druivenras…"
           value="${escapeHtml(ui.zoekterm)}"
         />
       </div>

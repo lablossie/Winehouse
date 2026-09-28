@@ -29,14 +29,14 @@ export function breekbaarLabel(value) {
 export function formatteerPrijs(bedrag) {
   const n = Number(bedrag);
   if (!Number.isFinite(n) || n <= 0) return '—';
-  return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'EUR' }).format(n);
+  return new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(n);
 }
 
 export function formatteerDatum(iso) {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+  return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 }
 
 export function nieuwId(prefix, bestaandeIds) {

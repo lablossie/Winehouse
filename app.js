@@ -146,7 +146,7 @@ appEl.addEventListener('submit', async (e) => {
     const geldig = await authMod.controleerPin();
     ui.pinBezig = false;
     if (geldig === false) {
-      ui.pinFout = 'Incorrect PIN, please try again.';
+      ui.pinFout = 'Onjuiste pincode, probeer opnieuw.';
       authMod.wisPin();
       render();
       return;
@@ -276,7 +276,7 @@ appEl.addEventListener('click', async (e) => {
     }
 
     case 'delete-item': {
-      if (!confirm('Permanently delete this item?')) return;
+      if (!confirm('Dit item definitief verwijderen?')) return;
       const nieuweData = stateMod.verwijderItem(data, id);
       ui.modal = null;
       ui.modalItem = null;
@@ -400,7 +400,7 @@ async function verwerkFotoUpload(input) {
       body: JSON.stringify({ afbeeldingen: base64Afbeeldingen }),
     });
     if (res.status === 401) throw Object.assign(new Error('unauthorized'), { code: 401 });
-    if (!res.ok) throw new Error('Recognition failed.');
+    if (!res.ok) throw new Error('Herkenning is mislukt.');
     const kandidaten = await res.json();
     ui.photoKandidaten = (Array.isArray(kandidaten) ? kandidaten : []).map((k) => ({ ...k, opgenomen: true }));
     ui.photoStatus = 'resultaten';
@@ -413,7 +413,7 @@ async function verwerkFotoUpload(input) {
       return;
     }
     ui.photoStatus = 'fout';
-    ui.photoFout = fout.message || 'Something went wrong.';
+    ui.photoFout = fout.message || 'Er ging iets mis.';
   }
   render();
 }
@@ -458,7 +458,7 @@ async function verrijkItem(id) {
       body: JSON.stringify({ item }),
     });
     if (res.status === 401) throw Object.assign(new Error('unauthorized'), { code: 401 });
-    if (!res.ok) throw new Error('Enrichment failed.');
+    if (!res.ok) throw new Error('Verrijken is mislukt.');
     const resultaat = await res.json();
 
     const updates = {
@@ -500,7 +500,7 @@ async function voerPairingUit(vraag) {
       body: JSON.stringify({ vraag, voorraad: voorraadSamenvatting }),
     });
     if (res.status === 401) throw Object.assign(new Error('unauthorized'), { code: 401 });
-    if (!res.ok) throw new Error('Could not fetch a suggestion.');
+    if (!res.ok) throw new Error('Suggestie ophalen is mislukt.');
     const suggesties = await res.json();
 
     const geldigeIds = new Set(data.inventory.map((i) => i.id));
@@ -517,7 +517,7 @@ async function voerPairingUit(vraag) {
       return;
     }
     ui.pairingStatus = 'fout';
-    ui.pairingFout = fout.message || 'Something went wrong.';
+    ui.pairingFout = fout.message || 'Er ging iets mis.';
   }
   render();
 }

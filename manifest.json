@@ -1,7 +1,7 @@
 {
-  "name": "Wine Cellar",
-  "short_name": "Wine Cellar",
-  "description": "Personal wine cellar tracker with photo recognition and food pairing suggestions.",
+  "name": "Wijnkelder",
+  "short_name": "Wijnkelder",
+  "description": "Persoonlijke wijnkelder-tracker met foto-herkenning en gerechtsuggesties.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

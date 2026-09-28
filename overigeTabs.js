@@ -10,9 +10,9 @@ export function renderOnlangsTab(state) {
   ).slice(0, 40);
 
   return `
-    <p class="tab-intro">The most recently added items, newest first — handy after a batch photo import.</p>
+    <p class="tab-intro">De laatst toegevoegde items, nieuwste eerst — handig na een batch-foto-import.</p>
     <div class="card-grid">
-      ${onlangs.map(renderItemCard).join('') || renderLegeStaat('Nothing added yet', 'Newly added items appear here first.')}
+      ${onlangs.map(renderItemCard).join('') || renderLegeStaat('Nog niets toegevoegd', 'Nieuw toegevoegde items verschijnen hier het eerst.')}
     </div>
   `;
 }
@@ -21,9 +21,9 @@ export function renderDrinkBinnenkortTab(state) {
   const items = sorteerItems(state.inventory.filter(isDrinkBinnenkort), 'urgentie');
 
   return `
-    <p class="tab-intro">Items that are at their peak now, or past their estimated window.</p>
+    <p class="tab-intro">Items die nu op hun best zijn of hun geschatte venster voorbij zijn.</p>
     <div class="card-grid">
-      ${items.map(renderItemCard).join('') || renderLegeStaat('Nothing urgent', 'Everything in your cellar still has plenty of time.')}
+      ${items.map(renderItemCard).join('') || renderLegeStaat('Niets urgents', 'Alles in je kelder heeft nog rustig de tijd.')}
     </div>
   `;
 }
@@ -32,7 +32,7 @@ export function renderHistorieTab(state) {
   const geschiedenis = [...state.history].sort((a, b) => (b.datum || '').localeCompare(a.datum || ''));
 
   if (geschiedenis.length === 0) {
-    return renderLegeStaat('No history yet', 'Once you mark a bottle as finished, it will show up here.');
+    return renderLegeStaat('Nog geen historie', 'Zodra je een fles als opgedronken markeert, verschijnt die hier.');
   }
 
   const rijen = geschiedenis.map(
@@ -49,7 +49,7 @@ export function renderHistorieTab(state) {
   return `
     <div class="table-wrap">
       <table class="history-table">
-        <thead><tr><th>Name</th><th>Producer</th><th>Vintage</th><th>Finished on</th></tr></thead>
+        <thead><tr><th>Naam</th><th>Producent</th><th>Jaartal</th><th>Opgedronken op</th></tr></thead>
         <tbody>${rijen}</tbody>
       </table>
     </div>
