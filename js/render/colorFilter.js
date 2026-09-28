@@ -23,11 +23,11 @@ export function colorFilterRowHTML(inventory, activeFilter) {
   const filter = activeFilter || 'All';
 
   const chips = [
-    { key: 'All', label: 'All' },
-    { key: 'White', label: 'White', dot: '#efe6d3' },
+    { key: 'All', label: 'Alle' },
+    { key: 'White', label: 'Wit', dot: '#efe6d3' },
     { key: 'Rosé', label: 'Rosé', dot: '#c98a93' },
-    { key: 'Red', label: 'Red', dot: '#6f1f2c' },
-    { key: 'Sparkling', label: 'Sparkling', icon: BUBBLES_ICON },
+    { key: 'Red', label: 'Rood', dot: '#6f1f2c' },
+    { key: 'Sparkling', label: 'Mousserend', icon: BUBBLES_ICON },
   ]
     .map((c) => {
       const active = c.key === filter;

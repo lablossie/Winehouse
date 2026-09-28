@@ -18,7 +18,8 @@ export function colorSplitInnerHTML(inventory) {
   const total = counts.White + counts.Rosé + counts.Red;
   if (total === 0) return '';
 
-  const segments = COLOR_ORDER.filter((k) => counts[k] > 0).map((k) => ({ name: k, count: counts[k], color: COLOR_COLORS[k] }));
+  const COLOR_LABEL_NL = { White: 'Wit', 'Rosé': 'Rosé', Red: 'Rood' };
+  const segments = COLOR_ORDER.filter((k) => counts[k] > 0).map((k) => ({ name: COLOR_LABEL_NL[k] || k, count: counts[k], color: COLOR_COLORS[k] }));
 
   const legend = segments
     .map((s) => {

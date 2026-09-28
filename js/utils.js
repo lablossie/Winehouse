@@ -16,7 +16,7 @@ export function formatEuro(value) {
 }
 
 export function uniqueSorted(list, key) {
-  return [...new Set(list.map((item) => item[key]))].sort((a, b) => a.localeCompare(b, 'en'));
+  return [...new Set(list.map((item) => item[key]))].sort((a, b) => a.localeCompare(b, 'nl'));
 }
 
 export function sumBottles(list) {

@@ -147,7 +147,7 @@ export function markDrunk(id) {
   const item = state.inventory.find((w) => w.id === id);
   if (!item || item.quantity <= 0) return;
   item.quantity -= 1;
-  const dateStr = new Date().toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const dateStr = new Date().toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric' });
   state.history.unshift({
     id: generateId('h'),
     estate: item.estate,

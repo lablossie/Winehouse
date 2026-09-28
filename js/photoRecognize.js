@@ -23,7 +23,7 @@ function resizeImageFile(file) {
       canvas.toBlob(
         (blob) => {
           if (!blob) {
-            reject(new Error('Could not process the photo.'));
+            reject(new Error('Kon de foto niet verwerken.'));
             return;
           }
           const reader = new FileReader();
@@ -31,7 +31,7 @@ function resizeImageFile(file) {
             const result = reader.result;
             resolve({ data: result.slice(result.indexOf(',') + 1), mediaType: 'image/jpeg' });
           };
-          reader.onerror = () => reject(new Error('Could not read the photo.'));
+          reader.onerror = () => reject(new Error('Kon de foto niet lezen.'));
           reader.readAsDataURL(blob);
         },
         'image/jpeg',
@@ -40,7 +40,7 @@ function resizeImageFile(file) {
     };
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('Could not open the photo.'));
+      reject(new Error('Kon de foto niet openen.'));
     };
     img.src = objectUrl;
   });
@@ -54,7 +54,7 @@ function resizeImageFile(file) {
 export async function recognizeFromPhotos(files, mode) {
   const fileList = Array.from(files || []).slice(0, MAX_IMAGES);
   if (fileList.length === 0) {
-    throw new Error('No photo selected.');
+    throw new Error('Geen foto geselecteerd.');
   }
 
   const images = await Promise.all(fileList.map(resizeImageFile));
@@ -69,14 +69,14 @@ export async function recognizeFromPhotos(files, mode) {
   try {
     data = await res.json();
   } catch (e) {
-    throw new Error('Unexpected response from the server.');
+    throw new Error('Onverwachte reactie van de server.');
   }
 
   if (!res.ok) {
-    throw new Error(data.error || 'Recognition failed.');
+    throw new Error(data.error || 'Herkenning is mislukt.');
   }
   if (!Array.isArray(data.items) || data.items.length === 0) {
-    throw new Error('No wine recognized in the photos. Try again with a clearer photo.');
+    throw new Error('Geen wijn herkend op de foto\'s. Probeer het opnieuw met een duidelijkere foto.');
   }
 
   return data.items;

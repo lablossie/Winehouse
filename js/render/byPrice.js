@@ -2,10 +2,10 @@ import { cardHTML } from './card.js';
 import { colorFilterRowHTML, matchesFilter } from './colorFilter.js';
 
 export function renderByPrice(state, colorFilter) {
-  const back = `<button class="back-btn" data-action="set-tab" data-tab="stock">&lsaquo; Back</button>`;
+  const back = `<button class="back-btn" data-action="set-tab" data-tab="stock">&lsaquo; Terug</button>`;
   const heading = `
     <div class="domain-header">
-      <div class="domain-name">All wines · price high to low</div>
+      <div class="domain-name">Alle wijnen · prijs hoog naar laag</div>
     </div>`;
   const filterRow = colorFilterRowHTML(state.inventory, colorFilter);
 
@@ -19,7 +19,7 @@ export function renderByPrice(state, colorFilter) {
       back +
       heading +
       filterRow +
-      `<div class="empty-state"><div class="glyph">&#127863;</div><p>No wines found for this filter.</p></div>`
+      `<div class="empty-state"><div class="glyph">&#127863;</div><p>Geen wijnen gevonden voor dit filter.</p></div>`
     );
   }
 

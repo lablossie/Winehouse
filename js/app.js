@@ -42,7 +42,7 @@ function totalBottles() {
   return sumBottles(state.inventory);
 }
 function urgentCount() {
-  return state.inventory.filter((w) => ripeningInfo(w).status !== 'Can still wait').length;
+  return state.inventory.filter((w) => ripeningInfo(w).status !== 'Kan nog wachten').length;
 }
 function totalValue() {
   return state.inventory.reduce((sum, w) => sum + w.quantity * Number(w.price || 0), 0);
@@ -61,26 +61,26 @@ function render() {
 
   appEl.innerHTML = `
     <div class="header">
-      <p class="eyebrow">Wine Collection</p>
-      <h1 class="title">Wine Cellar</h1>
+      <p class="eyebrow">Wijncollectie</p>
+      <h1 class="title">Wijnkelder</h1>
       <button class="owner-line" data-action="edit-owner">
-        ${state.ownerName ? `by ${escapeHtml(state.ownerName)}` : '+ add a name'}
+        ${state.ownerName ? `van ${escapeHtml(state.ownerName)}` : '+ naam toevoegen'}
         <span class="owner-edit-icon">&#9998;</span>
       </button>
-      <p class="subtitle">Stock, ripeness, and what to open next</p>
+      <p class="subtitle">Voorraad, rijpheid en wat je als volgende opent</p>
       <div class="hairline"></div>
       <div class="stat-row">
         <div class="stat">
           <div class="stat-num">${total}</div>
-          <div class="stat-label">bottles in stock</div>
+          <div class="stat-label">flessen op voorraad</div>
         </div>
         <div class="stat urgent-stat">
           <div class="stat-num">${urgent}</div>
-          <div class="stat-label">need attention</div>
+          <div class="stat-label">vragen aandacht</div>
         </div>
         <button class="stat" data-action="show-by-price">
           <div class="stat-num">${valueLabel}</div>
-          <div class="stat-label">cellar value <span class="stat-chevron">&rsaquo;</span></div>
+          <div class="stat-label">kelderwaarde <span class="stat-chevron">&rsaquo;</span></div>
         </button>
       </div>
       <button class="pairing-cta" data-action="open-pairing">
@@ -88,24 +88,24 @@ function render() {
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v7a2 2 0 0 0 4 0V2M10 9v13M16 2c-1.3 1.4-2 3-2 5.5S14.7 11 16 11v11"/></svg>
         </span>
         <span class="pairing-cta-text">
-          <span class="pairing-cta-title">Which wine goes with this?</span>
-          <span class="pairing-cta-sub">Pick a dish, Claude finds the match from your stock</span>
+          <span class="pairing-cta-title">Welke wijn past hierbij?</span>
+          <span class="pairing-cta-sub">Kies een gerecht, Claude zoekt de match uit je voorraad</span>
         </span>
         <span class="chevron">&rsaquo;</span>
       </button>
     </div>
 
     <div class="tabs">
-      <button class="tab-add-btn" data-action="go-home" title="Back to home">
+      <button class="tab-add-btn" data-action="go-home" title="Terug naar start">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9v-5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5h2.5a1 1 0 0 0 1-1v-9"/></svg>
       </button>
       <div class="tab-scroll">
-        <button class="tab-btn ${ui.activeTab === 'stock' ? 'active' : ''}" data-action="set-tab" data-tab="stock">Stock</button>
-        <button class="tab-btn ${ui.activeTab === 'recent' ? 'active' : ''}" data-action="set-tab" data-tab="recent">Recently added</button>
-        <button class="tab-btn ${ui.activeTab === 'soon' ? 'active' : ''}" data-action="set-tab" data-tab="soon">Drink soon</button>
-        <button class="tab-btn ${ui.activeTab === 'history' ? 'active' : ''}" data-action="set-tab" data-tab="history">History</button>
+        <button class="tab-btn ${ui.activeTab === 'stock' ? 'active' : ''}" data-action="set-tab" data-tab="stock">Voorraad</button>
+        <button class="tab-btn ${ui.activeTab === 'recent' ? 'active' : ''}" data-action="set-tab" data-tab="recent">Onlangs toegevoegd</button>
+        <button class="tab-btn ${ui.activeTab === 'soon' ? 'active' : ''}" data-action="set-tab" data-tab="soon">Drink binnenkort</button>
+        <button class="tab-btn ${ui.activeTab === 'history' ? 'active' : ''}" data-action="set-tab" data-tab="history">Historie</button>
       </div>
-      <button class="tab-add-btn primary" data-action="open-modal" title="Add wine">
+      <button class="tab-add-btn primary" data-action="open-modal" title="Wijn toevoegen">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       </button>
     </div>
@@ -128,8 +128,8 @@ function render() {
       !ui.detailId
         ? `
     <div class="footer-note">
-      <button class="export-btn" data-action="export-csv">&#8681; Export inventory to CSV</button>
-      <button data-action="reset-data">Reset to original inventory</button>
+      <button class="export-btn" data-action="export-csv">&#8681; Exporteer voorraad naar CSV</button>
+      <button data-action="reset-data">Terug naar oorspronkelijke voorraad</button>
     </div>
     `
         : ''
@@ -216,12 +216,12 @@ async function handlePairingSubmit() {
   if (!dish) return;
   ui.pairingQuery = dish;
   ui.pairingResults = [];
-  ui.pairingStatus = { state: 'busy', message: 'Claude is looking for a matching wine…' };
+  ui.pairingStatus = { state: 'busy', message: 'Claude zoekt een passende wijn…' };
   render();
   try {
     const matches = await findWinePairing(dish, state.inventory);
     if (matches.length === 0) {
-      ui.pairingStatus = { state: 'err', message: 'No matching wine found in your inventory for this dish.' };
+      ui.pairingStatus = { state: 'err', message: 'Geen passende wijn gevonden in je voorraad voor dit gerecht.' };
     } else {
       ui.pairingStatus = null;
     }
@@ -233,7 +233,7 @@ async function handlePairingSubmit() {
 }
 
 function submitWine() {
-  const country = document.getElementById('f-country').value.trim() || 'Germany';
+  const country = document.getElementById('f-country').value.trim() || 'Duitsland';
   const region = document.getElementById('f-region').value.trim() || 'Ahr';
   const estate = document.getElementById('f-estate').value.trim();
   const name = document.getElementById('f-name').value.trim();
@@ -247,7 +247,7 @@ function submitWine() {
   const notes = document.getElementById('f-notes').value.trim();
 
   if (!estate || !name || !vintage) {
-    alert('Please fill in at least the estate, name, and vintage.');
+    alert('Vul minimaal het domein, de naam en het jaartal in.');
     return;
   }
 
@@ -284,7 +284,7 @@ async function enrichWineAsync(id) {
 async function handlePhotoFiles(files, mode) {
   clearPhotoPreviews();
   ui.photoPreviews = Array.from(files).map((f) => URL.createObjectURL(f));
-  ui.photoStatus = { state: 'busy', message: mode === 'receipt' ? 'Reading receipt…' : 'Recognizing photos…' };
+  ui.photoStatus = { state: 'busy', message: mode === 'receipt' ? 'Bon wordt gelezen…' : 'Foto\u2019s worden herkend…' };
   render();
   try {
     const items = await recognizeFromPhotos(files, mode);
@@ -299,7 +299,7 @@ async function handlePhotoFiles(files, mode) {
 }
 
 function exportCSV() {
-  const header = ['Country', 'Region', 'Estate', 'Name', 'Vintage', 'Grape Variety', 'Classification', 'Quantity', 'Price per bottle', 'Total'];
+  const header = ['Land', 'Streek', 'Domein', 'Naam', 'Jaartal', 'Druivenras', 'Kwalificering', 'Aantal', 'Prijs per fles', 'Totaal'];
   const rows = state.inventory.map((w) => [
     w.country,
     w.region,
@@ -317,7 +317,7 @@ function exportCSV() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `wine-inventory-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `wijnvoorraad-export-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -376,7 +376,7 @@ appEl.addEventListener('click', (e) => {
       render();
       break;
     case 'edit-owner': {
-      const name = window.prompt('Whose cellar is this?', state.ownerName || '');
+      const name = window.prompt('Van wie is deze kelder?', state.ownerName || '');
       if (name !== null) {
         setOwnerName(name);
         render();
@@ -405,7 +405,7 @@ appEl.addEventListener('click', (e) => {
       submitWine();
       break;
     case 'delete-wine':
-      if (confirm('Delete this wine from your inventory completely?')) {
+      if (confirm('Deze wijn volledig uit je voorraad verwijderen?')) {
         deleteWine(el.dataset.id);
         ui.detailId = null;
         closeModal();
@@ -415,7 +415,7 @@ appEl.addEventListener('click', (e) => {
       exportCSV();
       break;
     case 'reset-data':
-      if (confirm('Are you sure you want to reset your inventory to the original list? History will also be cleared.')) {
+      if (confirm('Weet je zeker dat je je voorraad wilt terugzetten naar de oorspronkelijke lijst? De historie wordt ook gewist.')) {
         resetData();
         render();
       }

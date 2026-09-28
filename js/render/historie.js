@@ -2,7 +2,7 @@ import { escapeHtml } from '../utils.js';
 
 export function renderHistory(state) {
   if (state.history.length === 0) {
-    return `<div class="empty-state"><div class="glyph">&#128214;</div><p>No wines marked as consumed yet.</p></div>`;
+    return `<div class="empty-state"><div class="glyph">&#128214;</div><p>Nog geen wijnen als opgedronken gemarkeerd.</p></div>`;
   }
   const byDate = {};
   state.history.forEach((h) => {

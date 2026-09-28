@@ -35,7 +35,7 @@ export function countryDonutInnerHTML(inventory) {
 
   const segments = top.map(([name, count], i) => ({ name, count, color: PALETTE[i % PALETTE.length] }));
   if (restTotal > 0) {
-    segments.push({ name: 'Other', count: restTotal, color: OTHER_COLOR, other: true });
+    segments.push({ name: 'Overig', count: restTotal, color: OTHER_COLOR, other: true });
   }
 
   const legend = segments
@@ -56,7 +56,7 @@ export function countryDonutInnerHTML(inventory) {
     <div class="pie-row">
       <div class="donut-wrap">
         ${donutSVG(segments)}
-        <div class="donut-center"><div class="n">${total}</div><div class="l">bottles</div></div>
+        <div class="donut-center"><div class="n">${total}</div><div class="l">flessen</div></div>
       </div>
       <div class="legend">${legend}</div>
     </div>`;

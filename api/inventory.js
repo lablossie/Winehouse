@@ -6,7 +6,7 @@ async function kvCommand(command) {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) {
-    throw Object.assign(new Error('Vercel KV is not connected to this project yet.'), { code: 'NO_KV' });
+    throw Object.assign(new Error('Vercel KV is nog niet gekoppeld aan dit project.'), { code: 'NO_KV' });
   }
   const res = await fetch(url, {
     method: 'POST',
@@ -30,7 +30,7 @@ function isAuthorized(req) {
 
 export default async function handler(req, res) {
   if (!isAuthorized(req)) {
-    res.status(401).json({ error: 'Incorrect or missing PIN.' });
+    res.status(401).json({ error: 'Onjuiste of ontbrekende pincode.' });
     return;
   }
 
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     try {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
       if (!body || !Array.isArray(body.inventory) || !Array.isArray(body.history)) {
-        res.status(400).json({ error: 'Invalid data: inventory and history must be arrays.' });
+        res.status(400).json({ error: 'Ongeldige data: voorraad en historie moeten arrays zijn.' });
         return;
       }
       await kvCommand(['SET', KV_KEY, JSON.stringify({ inventory: body.inventory, history: body.history, ownerName: body.ownerName || '' })]);
@@ -59,5 +59,5 @@ export default async function handler(req, res) {
     return;
   }
 
-  res.status(405).json({ error: 'Method not allowed' });
+  res.status(405).json({ error: 'Methode niet toegestaan.' });
 }

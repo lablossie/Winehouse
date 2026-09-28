@@ -2,7 +2,7 @@ const COLOR_OPTIONS = ['White', 'Rosé', 'Red'];
 
 export function toDraftItem(raw) {
   return {
-    country: raw.country || 'Germany',
+    country: raw.country || 'Duitsland',
     region: raw.region || '',
     estate: raw.estate || '',
     name: raw.name || '',

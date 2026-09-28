@@ -23,7 +23,7 @@ export async function findWinePairing(dish, inventory) {
     }));
 
   if (wines.length === 0) {
-    throw new Error("You don't have any wines in stock yet.");
+    throw new Error('Je hebt nog geen wijnen op voorraad.');
   }
 
   const res = await fetch('/api/pairing', {
@@ -36,11 +36,11 @@ export async function findWinePairing(dish, inventory) {
   try {
     data = await res.json();
   } catch (e) {
-    throw new Error('Unexpected response from the server.');
+    throw new Error('Onverwachte reactie van de server.');
   }
 
   if (!res.ok) {
-    throw new Error(data.error || 'Searching for a matching wine failed.');
+    throw new Error(data.error || 'Zoeken naar een passende wijn is mislukt.');
   }
 
   return Array.isArray(data.matches) ? data.matches : [];

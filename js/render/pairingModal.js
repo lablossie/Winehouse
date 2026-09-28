@@ -22,15 +22,15 @@ export function pairingModalHTML(ui, state) {
   return `
     <div class="modal-backdrop" data-action="backdrop-close-pairing">
       <div class="modal">
-        <h3>Which wine goes with this?</h3>
-        <p class="photo-upload-hint" style="margin:0 0 14px;">Type a dish — Claude finds the best-matching wine from your own inventory.</p>
+        <h3>Welke wijn past hierbij?</h3>
+        <p class="photo-upload-hint" style="margin:0 0 14px;">Typ een gerecht — Claude zoekt de best passende wijn uit je eigen voorraad.</p>
         <div class="field">
-          <label>Dish</label>
-          <input id="pairing-input" placeholder="e.g. mussels, grilled salmon, cheese fondue…" value="${escapeHtml(ui.pairingQuery || '')}" ${busy ? 'disabled' : ''}>
+          <label>Gerecht</label>
+          <input id="pairing-input" placeholder="bv. mosselen, gegrilde zalm, kaasfondue…" value="${escapeHtml(ui.pairingQuery || '')}" ${busy ? 'disabled' : ''}>
         </div>
         <div class="modal-actions" style="margin-top:4px;">
-          <button class="btn-secondary" data-action="close-pairing">Close</button>
-          <button class="btn-primary" data-action="submit-pairing" ${busy ? 'disabled' : ''}>${busy ? 'Searching…' : 'Find a wine'}</button>
+          <button class="btn-secondary" data-action="close-pairing">Sluiten</button>
+          <button class="btn-primary" data-action="submit-pairing" ${busy ? 'disabled' : ''}>${busy ? 'Zoeken…' : 'Zoek een wijn'}</button>
         </div>
         ${statusHTML}
         ${resultsHTML ? `<div class="pairing-results">${resultsHTML}</div>` : ''}

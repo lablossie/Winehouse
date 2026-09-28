@@ -19,8 +19,9 @@ function classificationSelectHTML(current) {
   return options.map((k) => `<option ${current === k ? 'selected' : ''}>${escapeHtml(k)}</option>`).join('');
 }
 
+const COLOR_LABEL_NL = { White: 'Wit', 'Rosé': 'Rosé', Red: 'Rood' };
 function colorSelectHTML(current) {
-  return COLOR_OPTIONS.map((k) => `<option ${current === k ? 'selected' : ''}>${escapeHtml(k)}</option>`).join('');
+  return COLOR_OPTIONS.map((k) => `<option value="${k}" ${current === k ? 'selected' : ''}>${escapeHtml(COLOR_LABEL_NL[k] || k)}</option>`).join('');
 }
 
 function photoPreviewStripHTML(previews) {
@@ -36,19 +37,19 @@ function photoUploadHTML(ui) {
     <div class="photo-upload-box">
       <div class="photo-upload-row">
         <label class="photo-upload-btn ${busy ? 'disabled' : ''}">
-          &#128247; Photo(s) of bottle(s)
+          &#128247; Foto('s) van fles(sen)
           <input type="file" accept="image/*" multiple data-photo-mode="label" ${busy ? 'disabled' : ''}>
         </label>
         <label class="photo-upload-btn ${busy ? 'disabled' : ''}">
-          &#129534; Photo of receipt
+          &#129534; Foto van bon
           <input type="file" accept="image/*" multiple data-photo-mode="receipt" ${busy ? 'disabled' : ''}>
         </label>
       </div>
-      <p class="photo-upload-hint">Choose one or more photos — Claude recognizes the wine(s) automatically.</p>
+      <p class="photo-upload-hint">Kies een of meer foto's — Claude herkent de wijn(en) automatisch.</p>
       ${photoPreviewStripHTML(ui.photoPreviews)}
       ${statusHTML}
     </div>
-    <div class="divider-or">or fill in manually</div>`;
+    <div class="divider-or">of handmatig invullen</div>`;
 }
 
 export function modalHTML(ui, state) {
@@ -63,45 +64,45 @@ export function modalHTML(ui, state) {
   return `
     <div class="modal-backdrop" data-action="backdrop-close">
       <div class="modal">
-        <h3>${isEdit ? 'Edit wine' : 'Add new wine'}</h3>
+        <h3>${isEdit ? 'Wijn bewerken' : 'Nieuwe wijn toevoegen'}</h3>
 
         ${!isEdit ? photoUploadHTML(ui) : ''}
 
         <div class="field-row">
           <div class="field">
-            <label>Country</label>
-            <input id="f-country" value="${val('country', 'Germany')}">
+            <label>Land</label>
+            <input id="f-country" value="${val('country', 'Duitsland')}">
           </div>
           <div class="field">
-            <label>Region</label>
+            <label>Streek</label>
             <input id="f-region" value="${val('region', 'Ahr')}">
           </div>
         </div>
         <div class="field">
-          <label>Estate</label>
-          <input id="f-estate" placeholder="e.g. Meyer-Näkel" value="${val('estate', '')}">
+          <label>Domein</label>
+          <input id="f-estate" placeholder="bv. Meyer-Näkel" value="${val('estate', '')}">
         </div>
         <div class="field">
-          <label>Wine name</label>
-          <input id="f-name" placeholder="e.g. Spätburgunder" value="${val('name', '')}">
+          <label>Naam</label>
+          <input id="f-name" placeholder="bv. Spätburgunder" value="${val('name', '')}">
         </div>
         <div class="field-row">
           <div class="field">
-            <label>Vintage</label>
+            <label>Jaartal</label>
             <input id="f-vintage" type="number" placeholder="2024" value="${val('vintage', '')}">
           </div>
           <div class="field">
-            <label>Quantity</label>
+            <label>Aantal</label>
             <input id="f-quantity" type="number" value="${val('quantity', 1)}" min="0">
           </div>
         </div>
         <div class="field">
-          <label>Grape variety</label>
-          <input id="f-grape" placeholder="e.g. Spätburgunder" value="${val('grapeVariety', 'Spätburgunder')}">
+          <label>Druivenras</label>
+          <input id="f-grape" placeholder="bv. Spätburgunder" value="${val('grapeVariety', 'Spätburgunder')}">
         </div>
         <div class="field-row">
           <div class="field">
-            <label>Color</label>
+            <label>Kleur</label>
             <select id="f-color">
               ${colorSelectHTML(isEdit ? item.color : f.color || 'Red')}
             </select>
@@ -110,29 +111,29 @@ export function modalHTML(ui, state) {
             <label>&nbsp;</label>
             <label class="checkbox-label">
               <input type="checkbox" id="f-sparkling" ${(isEdit ? item.sparkling : f.sparkling) ? 'checked' : ''}>
-              Sparkling
+              Mousserend
             </label>
           </div>
         </div>
         <div class="field">
-          <label>Classification</label>
+          <label>Kwalificering</label>
           <select id="f-classification">
             ${classificationSelectHTML(isEdit ? item.classification : f.classification)}
           </select>
         </div>
         <div class="field">
-          <label>Price per bottle (€)</label>
+          <label>Prijs per fles (€)</label>
           <input id="f-price" type="number" step="0.01" placeholder="15.00" value="${isEdit && item.price ? escapeHtml(item.price) : f.price || ''}">
         </div>
         <div class="field">
-          <label>Notes (optional)</label>
-          <textarea id="f-notes" placeholder="e.g. gift from John, bought while on holiday…">${val('notes', '')}</textarea>
+          <label>Opmerkingen (optioneel)</label>
+          <textarea id="f-notes" placeholder="bv. cadeau van Jan, gekocht op vakantie…">${val('notes', '')}</textarea>
         </div>
         <div class="modal-actions">
-          ${isEdit ? `<button class="btn-secondary" data-action="delete-wine" data-id="${escapeHtml(item.id)}" style="color:var(--urgent);">Delete</button>` : `<button class="btn-secondary" data-action="close-modal">Cancel</button>`}
-          <button class="btn-primary" data-action="submit-wine">${isEdit ? 'Save' : 'Add'}</button>
+          ${isEdit ? `<button class="btn-secondary" data-action="delete-wine" data-id="${escapeHtml(item.id)}" style="color:var(--urgent);">Verwijderen</button>` : `<button class="btn-secondary" data-action="close-modal">Annuleren</button>`}
+          <button class="btn-primary" data-action="submit-wine">${isEdit ? 'Opslaan' : 'Toevoegen'}</button>
         </div>
-        ${isEdit ? `<button class="btn-secondary" style="width:100%; margin-top:10px;" data-action="close-modal">Cancel</button>` : ''}
+        ${isEdit ? `<button class="btn-secondary" style="width:100%; margin-top:10px;" data-action="close-modal">Annuleren</button>` : ''}
       </div>
     </div>`;
 }

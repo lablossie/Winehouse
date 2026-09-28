@@ -34,12 +34,12 @@ function renderLockScreen(appEl, onSubmit, error) {
   appEl.innerHTML = `
     <div class="lock-screen">
       <div class="lock-box">
-        <p class="eyebrow">Wine Collection</p>
-        <h1 class="title">Wine Cellar</h1>
-        <p class="lock-text">Enter the PIN to see your inventory.</p>
+        <p class="eyebrow">Wijncollectie</p>
+        <h1 class="title">Wijnkelder</h1>
+        <p class="lock-text">Voer de pincode in om je voorraad te zien.</p>
         <input id="pin-input" class="lock-input" type="password" autocomplete="off" placeholder="PIN">
         ${error ? `<p class="lock-error">${error}</p>` : ''}
-        <button id="pin-submit" class="btn-primary lock-submit">Unlock</button>
+        <button id="pin-submit" class="btn-primary lock-submit">Ontgrendelen</button>
       </div>
     </div>`;
 
@@ -75,10 +75,10 @@ export async function ensureUnlocked(appEl) {
         async (pin) => {
           const submit = appEl.querySelector('#pin-submit');
           submit.disabled = true;
-          submit.textContent = 'Checking…';
+          submit.textContent = 'Controleren…';
           const result = await probePin(pin);
           if (result === 'locked') {
-            attempt('Incorrect PIN, please try again.');
+            attempt('Onjuiste pincode, probeer opnieuw.');
             return;
           }
           // 'ok' or 'offline': we can't verify with certainty without a

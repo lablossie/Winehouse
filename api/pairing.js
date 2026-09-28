@@ -19,18 +19,18 @@ function stripCodeFences(text) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Methode niet toegestaan.' });
     return;
   }
 
   if (!isAuthorized(req)) {
-    res.status(401).json({ error: 'Incorrect or missing PIN.' });
+    res.status(401).json({ error: 'Onjuiste of ontbrekende pincode.' });
     return;
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    res.status(503).json({ error: 'The Claude API key has not been set up yet (ANTHROPIC_API_KEY is missing in Vercel).' });
+    res.status(503).json({ error: 'De Claude API-sleutel is nog niet ingesteld (ANTHROPIC_API_KEY ontbreekt in Vercel).' });
     return;
   }
 
@@ -38,7 +38,7 @@ export default async function handler(req, res) {
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   } catch (e) {
-    res.status(400).json({ error: 'Invalid request.' });
+    res.status(400).json({ error: 'Ongeldig verzoek.' });
     return;
   }
 
@@ -46,15 +46,15 @@ export default async function handler(req, res) {
   const wines = body && Array.isArray(body.wines) ? body.wines : [];
 
   if (!dish) {
-    res.status(400).json({ error: 'No dish provided.' });
+    res.status(400).json({ error: 'Geen gerecht opgegeven.' });
     return;
   }
   if (wines.length === 0) {
-    res.status(400).json({ error: 'No wines in stock to choose from.' });
+    res.status(400).json({ error: 'Geen wijnen op voorraad om uit te kiezen.' });
     return;
   }
   if (wines.length > MAX_WINES) {
-    res.status(400).json({ error: 'Too many wines to process.' });
+    res.status(400).json({ error: 'Te veel wijnen om te verwerken.' });
     return;
   }
 
@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     `Here is my wine inventory as a JSON list of wines I have on hand:\n${JSON.stringify(wines)}\n\n` +
     'Pick the 1 to 3 wines from THIS list (use the exact "id" field) that best pair with this dish. ' +
     'Return ONLY a valid JSON array, with no explanation and no markdown formatting, with each recommended wine as an object with the fields: ' +
-    'id (the exact id from the list), reason (a short, concrete explanation in English of why this wine pairs well with this dish, at most 2 sentences, referencing flavors/aromas from the flavor profile where possible). ' +
+    'id (the exact id from the list), reason (a short, concrete explanation in Dutch (Nederlands) of why this wine pairs well with this dish, at most 2 sentences, referencing flavors/aromas from the flavor profile where possible). ' +
     'Sort from best to least good match. Use ONLY ids that literally appear in the list — never invent a wine. ' +
     'If truly no wine in the list is a reasonable match, return an empty array [].';
 
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
 
     const textBlock = (claudeData.content || []).find((b) => b.type === 'text');
     if (!textBlock) {
-      res.status(502).json({ error: 'Unexpected response from Claude.' });
+      res.status(502).json({ error: 'Onverwachte reactie van Claude.' });
       return;
     }
 
@@ -102,12 +102,12 @@ export default async function handler(req, res) {
     try {
       parsed = JSON.parse(stripCodeFences(textBlock.text));
     } catch (e) {
-      res.status(502).json({ error: 'Could not read the response from Claude. Please try again.' });
+      res.status(502).json({ error: 'Kon de reactie van Claude niet lezen. Probeer het opnieuw.' });
       return;
     }
 
     if (!Array.isArray(parsed)) {
-      res.status(502).json({ error: 'Unexpected format from Claude.' });
+      res.status(502).json({ error: 'Onverwacht formaat van Claude.' });
       return;
     }
 
@@ -118,6 +118,6 @@ export default async function handler(req, res) {
 
     res.status(200).json({ matches });
   } catch (e) {
-    res.status(500).json({ error: e.message || 'Something went wrong while looking for a matching wine.' });
+    res.status(500).json({ error: e.message || 'Er ging iets mis bij het zoeken naar een passende wijn.' });
   }
 }

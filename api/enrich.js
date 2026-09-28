@@ -30,18 +30,18 @@ function stripCiteTags(text) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Methode niet toegestaan.' });
     return;
   }
 
   if (!isAuthorized(req)) {
-    res.status(401).json({ error: 'Incorrect or missing PIN.' });
+    res.status(401).json({ error: 'Onjuiste of ontbrekende pincode.' });
     return;
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    res.status(503).json({ error: 'The Claude API key has not been set up yet (ANTHROPIC_API_KEY is missing in Vercel).' });
+    res.status(503).json({ error: 'De Claude API-sleutel is nog niet ingesteld (ANTHROPIC_API_KEY ontbreekt in Vercel).' });
     return;
   }
 
@@ -49,14 +49,14 @@ export default async function handler(req, res) {
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   } catch (e) {
-    res.status(400).json({ error: 'Invalid request.' });
+    res.status(400).json({ error: 'Ongeldig verzoek.' });
     return;
   }
 
   const estate = body && typeof body.estate === 'string' ? body.estate.trim() : '';
   const name = body && typeof body.name === 'string' ? body.name.trim() : '';
   if (!estate || !name) {
-    res.status(400).json({ error: 'Estate and name are required.' });
+    res.status(400).json({ error: 'Domein en naam zijn verplicht.' });
     return;
   }
   const vintage = body.vintage || '';
@@ -81,8 +81,8 @@ export default async function handler(req, res) {
     'multiple listings, use a realistic average, not the highest or lowest outlier.\n\n' +
     'As your very last message, return ONLY a valid JSON object — no introductory sentence before it, no explanation after it, no markdown code-block formatting, ' +
     'and no citations or citation tags in the text itself. Exactly these fields: ' +
-    'description (3-5 sentences in English about the wine/estate/grape, or an empty string "" if nothing found), ' +
-    'flavorProfile (array of 4-7 short English flavor or aroma terms such as "Black cherry", "Clove", "Vanilla", or an empty array [] if nothing found), ' +
+    'description (3-5 zinnen in het Nederlands over de wijn/het domein/de druif, of een lege string "" als niets gevonden), ' +
+    'flavorProfile (array van 4-7 korte Nederlandse smaak- of aromatermen zoals "Zwarte kers", "Kruidnagel", "Vanille", of een lege array [] als niets gevonden), ' +
     'estimatedPrice (number, average retail price per bottle in EUR with no currency symbol, e.g. 15.50, or 0 if you cannot find a reliable price), ' +
     'grapeVariety (the verified grape variety/blend if you found it with confidence, e.g. "Grenache, Syrah, Mourvèdre", or an empty string "" if not confident or nothing different from the given value), ' +
     'region (the verified wine region/appellation if you found it with confidence, e.g. "Châteauneuf-du-Pape", or an empty string "" if not confident or nothing different from the given value).';
@@ -114,7 +114,7 @@ export default async function handler(req, res) {
     const textBlocks = (claudeData.content || []).filter((b) => b.type === 'text');
     const lastText = textBlocks[textBlocks.length - 1];
     if (!lastText) {
-      res.status(502).json({ error: 'Unexpected response from Claude.' });
+      res.status(502).json({ error: 'Onverwachte reactie van Claude.' });
       return;
     }
 
@@ -122,7 +122,7 @@ export default async function handler(req, res) {
     try {
       parsed = JSON.parse(extractJson(lastText.text));
     } catch (e) {
-      res.status(502).json({ error: 'Could not read the response from Claude.' });
+      res.status(502).json({ error: 'Kon de reactie van Claude niet lezen.' });
       return;
     }
 
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
       region: stripCiteTags(typeof parsed.region === 'string' ? parsed.region : ''),
     });
   } catch (e) {
-    res.status(500).json({ error: e.message || 'Something went wrong while looking up this wine.' });
+    res.status(500).json({ error: e.message || 'Er ging iets mis bij het opzoeken van deze wijn.' });
   }
 }
 

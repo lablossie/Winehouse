@@ -7,8 +7,8 @@ import { ripeningInfo } from '../model.js';
 
 const SORT_OPTIONS = [
   { key: 'name', label: 'A-Z' },
-  { key: 'price', label: 'Price' },
-  { key: 'drinkby', label: 'Drink by' },
+  { key: 'price', label: 'Prijs' },
+  { key: 'drinkby', label: 'Op einddatum' },
 ];
 
 function sortWines(wines, sortBy) {
@@ -28,7 +28,7 @@ function sortChipRowHTML(sortBy) {
   const chips = SORT_OPTIONS.map(
     (o) => `<button class="sort-chip ${active === o.key ? 'active' : ''}" data-action="set-sort" data-sort="${o.key}">${escapeHtml(o.label)}</button>`
   ).join('');
-  return `<div class="sort-chip-row"><span class="sort-chip-label">Sort</span>${chips}</div>`;
+  return `<div class="sort-chip-row"><span class="sort-chip-label">Sorteer</span>${chips}</div>`;
 }
 
 function dashboardHTML(inventory) {
@@ -39,15 +39,15 @@ function dashboardHTML(inventory) {
 }
 
 function searchBarHTML(searchQuery) {
-  return `<input class="search-input" id="search-input" type="text" placeholder="Search by name, estate, or grape…" value="${escapeHtml(searchQuery)}">`;
+  return `<input class="search-input" id="search-input" type="text" placeholder="Zoek op naam, domein of druivenras…" value="${escapeHtml(searchQuery)}">`;
 }
 
 function backBtnHTML(level, country, region) {
-  return `<button class="back-btn" data-action="nav" data-level="${level}" data-country="${escapeHtml(country || '')}" data-region="${escapeHtml(region || '')}">&lsaquo; Back</button>`;
+  return `<button class="back-btn" data-action="nav" data-level="${level}" data-country="${escapeHtml(country || '')}" data-region="${escapeHtml(region || '')}">&lsaquo; Terug</button>`;
 }
 
 function breadcrumbHTML(nav) {
-  const parts = [{ label: 'All countries', level: 'country' }];
+  const parts = [{ label: 'Alle landen', level: 'country' }];
   if (nav.country) parts.push({ label: nav.country, level: 'region', country: nav.country });
   if (nav.region) parts.push({ label: nav.region, level: 'estate', country: nav.country, region: nav.region });
   if (nav.estate) parts.push({ label: nav.estate, level: null });
@@ -79,14 +79,14 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
         w.country.toLowerCase().includes(q)
     );
     if (matches.length === 0) {
-      return bar + `<div class="empty-state"><div class="glyph">&#128269;</div><p>No wines found for "${escapeHtml(searchQuery)}".</p></div>`;
+      return bar + `<div class="empty-state"><div class="glyph">&#128269;</div><p>Geen wijnen gevonden voor "${escapeHtml(searchQuery)}".</p></div>`;
     }
     return bar + matches.map((w) => cardHTML(w, true)).join('');
   }
 
   const nav = state.nav;
   if (inventory.length === 0) {
-    return bar + `<div class="empty-state"><div class="glyph">&#127863;</div><p>No wines left in stock.</p></div>`;
+    return bar + `<div class="empty-state"><div class="glyph">&#127863;</div><p>Geen wijnen meer op voorraad.</p></div>`;
   }
 
   if (nav.level === 'country') {
@@ -98,10 +98,11 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
         inventory.filter((w) => matchesFilter(w, filter)),
         sortBy
       );
-      const emptyLabel = filter === 'Sparkling' ? 'sparkling' : filter.toLowerCase();
+      const COLOR_LABEL_NL = { White: 'witte', 'Rosé': 'rosé', Red: 'rode', Sparkling: 'mousserende' };
+      const emptyLabel = COLOR_LABEL_NL[filter] || filter.toLowerCase();
       const list =
         matches.length === 0
-          ? `<div class="empty-state"><div class="glyph">&#127863;</div><p>No ${escapeHtml(emptyLabel)} wines in stock.</p></div>`
+          ? `<div class="empty-state"><div class="glyph">&#127863;</div><p>Geen ${escapeHtml(emptyLabel)} wijnen op voorraad.</p></div>`
           : matches.map((w) => cardHTML(w, true)).join('');
       const sortRow = matches.length > 0 ? sortChipRowHTML(sortBy) : '';
       return bar + dashboardHTML(inventory) + filterRow + sortRow + list;
@@ -114,7 +115,7 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
         return `<button class="nav-item" data-action="nav" data-level="region" data-country="${escapeHtml(country)}">
           <div>
             <div class="nav-item-name">${escapeHtml(country)}</div>
-            <div class="nav-item-count">${sumBottles(list)} bottles</div>
+            <div class="nav-item-count">${sumBottles(list)} flessen</div>
           </div>
           <div class="nav-item-right"><span class="chevron">&rsaquo;</span></div>
         </button>`;
@@ -131,7 +132,7 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
         return `<button class="nav-item" data-action="nav" data-level="region" data-country="${escapeHtml(country)}">
           <div>
             <div class="nav-item-name">${escapeHtml(country)}</div>
-            <div class="nav-item-count">${sumBottles(list)} bottles</div>
+            <div class="nav-item-count">${sumBottles(list)} flessen</div>
           </div>
           <div class="nav-item-right"><span class="chevron">&rsaquo;</span></div>
         </button>`;
@@ -141,7 +142,7 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
       bar +
       backBtnHTML('country') +
       `<div class="domain-header">
-        <div class="domain-name">Other countries</div>
+        <div class="domain-name">Overige landen</div>
       </div>
       <div class="nav-list">${items}</div>`
     );
@@ -155,7 +156,7 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
         return `<button class="nav-item" data-action="nav" data-level="estate" data-country="${escapeHtml(nav.country)}" data-region="${escapeHtml(r)}">
           <div>
             <div class="nav-item-name">${escapeHtml(r)}</div>
-            <div class="nav-item-count">${sumBottles(list)} bottles</div>
+            <div class="nav-item-count">${sumBottles(list)} flessen</div>
           </div>
           <div class="nav-item-right"><span class="chevron">&rsaquo;</span></div>
         </button>`;
@@ -172,7 +173,7 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
         return `<button class="nav-item" data-action="nav" data-level="wines" data-country="${escapeHtml(nav.country)}" data-region="${escapeHtml(nav.region)}" data-estate="${escapeHtml(d)}">
           <div>
             <div class="nav-item-name">${escapeHtml(d)}</div>
-            <div class="nav-item-count">${sumBottles(list)} bottles</div>
+            <div class="nav-item-count">${sumBottles(list)} flessen</div>
           </div>
           <div class="nav-item-right"><span class="chevron">&rsaquo;</span></div>
         </button>`;
@@ -188,7 +189,7 @@ export function renderVoorraad(state, searchQuery, colorFilter, sortBy) {
     breadcrumbHTML(nav) +
     `<div class="domain-header">
       <div class="domain-name">${escapeHtml(nav.estate)}</div>
-      <div class="domain-count">${sumBottles(items)} bottles</div>
+      <div class="domain-count">${sumBottles(items)} flessen</div>
     </div>
     ${items.map((w) => cardHTML(w, false)).join('')}`
   );

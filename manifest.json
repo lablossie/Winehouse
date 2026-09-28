@@ -1,6 +1,6 @@
 {
-  "name": "Wine Cellar - AI Wine Inventory",
-  "short_name": "Wine Cellar",
+  "name": "Wijnkelder - AI Wijnvoorraad",
+  "short_name": "Wijnkelder",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

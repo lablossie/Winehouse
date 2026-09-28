@@ -3,10 +3,10 @@ const MODEL = 'claude-haiku-4-5';
 const MAX_IMAGES = 6;
 
 const LABEL_PROMPT =
-  'These are one or more photos of wine bottles or wine labels. Multiple different bottles can appear in one photo, and the same bottle can appear in multiple photos. Return ONLY a valid JSON array, with no explanation and no markdown formatting. For each distinct wine you recognize, provide an object with exactly these fields: country (e.g. "Germany" or "France"), region (wine region/appellation), estate (name of the winery/producer), name (name of the cuvée/wine, without producer and without vintage), vintage (number, or null for a non-vintage wine), grapeVariety (grape or blend), color (exactly "White", "Rosé" or "Red"), sparkling (true or false — is it a sparkling wine), classification (quality classification, or "not stated on label" if not visible), quantity (always 1, regardless of how many photos of the same bottle there are), price (always 0). If the same wine appears in multiple photos, include it only once. Return an empty array [] if you cannot recognize any wine.';
+  'These are one or more photos of wine bottles or wine labels. Multiple different bottles can appear in one photo, and the same bottle can appear in multiple photos. Return ONLY a valid JSON array, with no explanation and no markdown formatting. For each distinct wine you recognize, provide an object with exactly these fields: country (in Dutch, e.g. "Duitsland" or "Frankrijk"), region (wine region/appellation), estate (name of the winery/producer), name (name of the cuvée/wine, without producer and without vintage), vintage (number, or null for a non-vintage wine), grapeVariety (grape or blend), color (exactly "White", "Rosé" or "Red"), sparkling (true or false — is it a sparkling wine), classification (quality classification, or "not stated on label" if not visible), quantity (always 1, regardless of how many photos of the same bottle there are), price (always 0). If the same wine appears in multiple photos, include it only once. Return an empty array [] if you cannot recognize any wine.';
 
 const RECEIPT_PROMPT =
-  'These are one or more photos of (parts of) the same receipt or invoice for a wine purchase, possibly listing multiple wines. Return ONLY a valid JSON array, with no explanation and no markdown formatting, with an object for each wine line on the receipt with these fields: country (guess based on shop/wine name if not explicitly stated), region (wine region, or "" if unknown), estate (name of the winery/producer, or "" if not distinguishable from the wine name), name (name of the wine/cuvée), vintage (number, or null if not stated), grapeVariety (if it can be inferred, otherwise ""), color (exactly "White", "Rosé" or "Red", estimated as best you can), sparkling (true or false), classification ("not stated on receipt" if this isn\'t on the receipt), quantity (number of bottles on this line), price (price PER BOTTLE — divide a total price by the quantity). Include every distinct wine line as a separate object in the array. Skip non-wine items (deposit, bags, discounts). Return an empty array [] if no wine lines can be recognized.';
+  'These are one or more photos of (parts of) the same receipt or invoice for a wine purchase, possibly listing multiple wines. Return ONLY a valid JSON array, with no explanation and no markdown formatting, with an object for each wine line on the receipt with these fields: country (in Dutch, guess based on shop/wine name if not explicitly stated), region (wine region, or "" if unknown), estate (name of the winery/producer, or "" if not distinguishable from the wine name), name (name of the wine/cuvée), vintage (number, or null if not stated), grapeVariety (if it can be inferred, otherwise ""), color (exactly "White", "Rosé" or "Red", estimated as best you can), sparkling (true or false), classification ("not stated on receipt" if this isn\'t on the receipt), quantity (number of bottles on this line), price (price PER BOTTLE — divide a total price by the quantity). Include every distinct wine line as a separate object in the array. Skip non-wine items (deposit, bags, discounts). Return an empty array [] if no wine lines can be recognized.';
 
 function isAuthorized(req) {
   const requiredPin = process.env.APP_PIN;
@@ -25,18 +25,18 @@ function stripCodeFences(text) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Methode niet toegestaan.' });
     return;
   }
 
   if (!isAuthorized(req)) {
-    res.status(401).json({ error: 'Incorrect or missing PIN.' });
+    res.status(401).json({ error: 'Onjuiste of ontbrekende pincode.' });
     return;
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    res.status(503).json({ error: 'The Claude API key has not been set up yet (ANTHROPIC_API_KEY is missing in Vercel).' });
+    res.status(503).json({ error: 'De Claude API-sleutel is nog niet ingesteld (ANTHROPIC_API_KEY ontbreekt in Vercel).' });
     return;
   }
 
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
   } catch (e) {
-    res.status(400).json({ error: 'Invalid request.' });
+    res.status(400).json({ error: 'Ongeldig verzoek.' });
     return;
   }
 
@@ -52,16 +52,16 @@ export default async function handler(req, res) {
   const mode = body && body.mode === 'receipt' ? 'receipt' : 'label';
 
   if (images.length === 0) {
-    res.status(400).json({ error: 'No photo received.' });
+    res.status(400).json({ error: 'Geen foto ontvangen.' });
     return;
   }
   if (images.length > MAX_IMAGES) {
-    res.status(400).json({ error: `Maximum of ${MAX_IMAGES} photos at a time.` });
+    res.status(400).json({ error: `Maximaal ${MAX_IMAGES} foto's tegelijk.` });
     return;
   }
   for (const img of images) {
     if (!img || typeof img.data !== 'string' || !img.data) {
-      res.status(400).json({ error: 'One of the photos could not be read.' });
+      res.status(400).json({ error: 'Een van de foto\'s kon niet worden gelezen.' });
       return;
     }
   }
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
 
     const textBlock = (claudeData.content || []).find((b) => b.type === 'text');
     if (!textBlock) {
-      res.status(502).json({ error: 'Unexpected response from Claude.' });
+      res.status(502).json({ error: 'Onverwachte reactie van Claude.' });
       return;
     }
 
@@ -108,17 +108,17 @@ export default async function handler(req, res) {
     try {
       parsed = JSON.parse(stripCodeFences(textBlock.text));
     } catch (e) {
-      res.status(502).json({ error: 'Could not read the response from Claude. Try again with a clearer photo.' });
+      res.status(502).json({ error: 'Kon de reactie van Claude niet lezen. Probeer het opnieuw met een duidelijkere foto.' });
       return;
     }
 
     if (!Array.isArray(parsed)) {
-      res.status(502).json({ error: 'Unexpected format from Claude — expected a list of wines.' });
+      res.status(502).json({ error: 'Onverwacht formaat van Claude \u2014 een lijst met wijnen werd verwacht.' });
       return;
     }
 
     res.status(200).json({ items: parsed });
   } catch (e) {
-    res.status(500).json({ error: e.message || 'Something went wrong while recognizing the photos.' });
+    res.status(500).json({ error: e.message || 'Er ging iets mis bij het herkennen van de foto\'s.' });
   }
 }

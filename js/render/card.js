@@ -8,7 +8,7 @@ function gaugeHTML(wine) {
     <div class="gauge-wrap">
       <div class="gauge-label-row">
         <span class="gauge-status" style="color:${r.color}">${escapeHtml(r.status)}</span>
-        <span>drink by ~${r.drinkByYear}</span>
+        <span>drink voor ~${r.drinkByYear}</span>
       </div>
       <div class="gauge" style="color:${r.color}">
         <div class="gauge-fill" style="width:${pct}%"></div>
@@ -49,7 +49,7 @@ export function cardHTML(wine, showEstate) {
           ${noteHTML(wine.notes)}
         </div>
         <div class="card-top-right">
-          <button class="edit-btn" data-action="open-edit" data-id="${id}" title="Edit">&#9998;</button>
+          <button class="edit-btn" data-action="open-edit" data-id="${id}" title="Bewerken">&#9998;</button>
           ${sealBadgeHTML(wine.classification)}
         </div>
       </div>
@@ -60,7 +60,7 @@ export function cardHTML(wine, showEstate) {
           <span class="stepper-count">${wine.quantity}</span>
           <button data-action="adjust" data-id="${id}" data-delta="1">+</button>
         </div>
-        <button class="drink-btn" data-action="drink" data-id="${id}" ${wine.quantity <= 0 ? 'disabled' : ''}>Consumed</button>
+        <button class="drink-btn" data-action="drink" data-id="${id}" ${wine.quantity <= 0 ? 'disabled' : ''}>Opgedronken</button>
       </div>
     </div>`;
 }
