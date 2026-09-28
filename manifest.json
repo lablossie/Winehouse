@@ -1,16 +1,16 @@
 {
-  "name": "Wine Cellar - AI Wine Inventory",
+  "name": "Wine Cellar",
   "short_name": "Wine Cellar",
-  "start_url": "./index.html",
-  "scope": "./",
+  "description": "Personal wine cellar tracker with photo recognition and food pairing suggestions.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#171c1f",
-  "theme_color": "#171c1f",
+  "background_color": "#151016",
+  "theme_color": "#151016",
+  "orientation": "portrait-primary",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }

@@ -1,58 +1,61 @@
-# Wine Cellar — a personal wine inventory app with AI recognition
+# Wijnkelder
 
-An installable, mobile-friendly app for keeping track of your own wine collection: add
-bottles by snapping a photo, let AI recognize the label, filter and sort by color and
-region, track ripeness, and ask "what goes with this dish?" and get a suggestion pulled
-from your own stock — never a bottle you don't actually own.
+Een installeerbare, mobielvriendelijke wijnkelder-tracker: voorraadbeheer,
+foto-herkenning, een "wat drink ik hierbij?"-suggestie, en optionele
+AI-research-verrijking per fles. Vanilla JavaScript, geen framework, geen
+build-stap — de volledige specificatie staat in
+[`docs/BUILD_GUIDE.nl.md`](docs/BUILD_GUIDE.nl.md).
 
-This isn't a generic inventory template with wine as a placeholder — it's built around
-how wine collectors actually think about their cellar: country → region → estate, red/
-white/rosé/sparkling split, drink-by windows, classifications (DOCG, AOC, Kabinett, and
-so on).
+## Setup
 
-## What's included
+1. Maak een GitHub-repo aan met deze code en koppel 'm aan een nieuw
+   Vercel-project.
+2. Voeg in het Vercel-dashboard een **Vercel KV**- of **Upstash Redis**-
+   database toe aan het project — de env vars worden automatisch gezet.
+3. Zet in Vercel → Settings → Environment Variables:
+   - `APP_PIN` — de gewenste toegangscode (leeg = geen slot).
+   - `ANTHROPIC_API_KEY` — eigen sleutel van console.anthropic.com.
+4. Deploy (automatisch bij git push). Open de app en ontgrendel met de
+   pincode.
+5. Installeer de app op je startscherm via de "Toevoegen aan beginscherm"-
+   optie van je browser — daarna werkt hij als een gewone app, ook offline
+   met de laatst geziene data.
 
-- Full source code (vanilla JS, no build step required)
-- 8 sample wines to start with — replace with your own cellar
-- Ready-to-use AI features: photo recognition, receipt recognition, "what pairs with
-  this?" suggestions, and automatic background research enrichment for new bottles
-- PWA: installable on the home screen, works offline
-- `docs/BUILD_GUIDE.en.md` / `docs/BUILD_GUIDE.nl.md` — full architecture and design
-  documentation (English and Dutch), including a list of bugs that have already been
-  fixed for you, and a ready-to-paste starter prompt for Claude Code
+Lokaal ontwikkelen: `npm i -g vercel`, kopieer `.env.example` naar `.env`,
+vul 'm in, en start met `vercel dev`.
 
-## Setup (~15 minutes) — no coding experience required
+## Structuur
 
-You don't need to be a developer to get this running. Every step below is something
-Claude Code can do for you if you paste in the starter prompt from
-`docs/BUILD_GUIDE.en.md` — you just create the two free accounts and copy in two keys.
+```
+index.html, manifest.json, sw.js   PWA-shell
+css/styles.css                     al het design (CSS-variabelen)
+js/app.js                          state, render(), event delegation
+js/state.js                        laden/opslaan, CRUD, offline-sync
+js/auth.js                         pincode-scherm
+js/model.js                        rijpingsberekening, sortering, hiërarchie
+js/render/                         één module per view, elk een pure functie
+api/                                inventory (KV), recognize/pairing/enrich (AI)
+lib/                                gedeelde serverless-helpers (kv, auth, anthropic)
+```
 
-1. **Push the code to your own GitHub repo** and connect it to a new project on
-   [vercel.com](https://vercel.com) (a free account is enough).
-2. **Add a database**: in your Vercel project → Storage → create a KV database (or
-   Upstash Redis via the marketplace). The correct environment variables are set
-   automatically.
-3. **Set two environment variables** in Vercel → Settings → Environment Variables:
-   - `APP_PIN` — an access code of your choosing for the app (e.g. `1234`). Leave it
-     empty and the app is open to anyone with the link.
-   - `ANTHROPIC_API_KEY` — your own key from
-     [console.anthropic.com](https://console.anthropic.com) (Console → API Keys). Add a
-     small balance (from $5) under Billing. This is a separate, paid balance — unrelated
-     to any Claude.ai subscription. Under normal use (a few photos a week) this
-     typically costs a few cents a month.
-4. **Deploy** (happens automatically on every push to the main branch).
-5. Open the app, enter your PIN, and start replacing the sample data with your own
-   cellar — by hand, or just by taking photos of the bottles you already own.
+## Functionaliteit
 
-## Not a wine collector? It still adapts.
+- Voorraadbeheer met aantallen, "opgedronken"-historie, filters per kleur met
+  live tellers, sortering, en navigatie per herkomst (land → gebied →
+  producent).
+- Zoeken op naam/producent/druivenras, met focusbehoud tijdens typen.
+- Rijpings-/houdbaarheidsindicator per fles, gebaseerd op kleur, mousserend
+  en kwalificering.
+- "Onlangs toegevoegd" en "Drink binnenkort" tabs.
+- CSV-export van de volledige voorraad.
+- Foto-herkenning (fles of aankoopbon, ook meerdere items per foto) ter
+  controle vóór toevoegen.
+- "Wat drink ik hierbij?" — contextuele suggestie uit je eigen voorraad.
+- Optionele AI-research-verrijking per item (achtergrondinfo, smaakprofiel,
+  correctie van druivenras/gebied, geschatte prijs).
+- Installeerbaar als PWA, werkt offline met laatst bekende data.
+- Gedeelde toegang via één pincode voor het hele huishouden.
 
-The data model (country/region/estate/grape variety, classification, vintage) happens to
-map cleanly onto other collections too — beer, whisky, books — with a handful of text
-changes. See `docs/BUILD_GUIDE.en.md` section 3 for the data model and section 5 for the
-AI prompts you'd adjust, or hand the whole guide to Claude Code and let it do the
-adaptation for you.
-
-## License / usage
-
-For personal use or modification. Not intended to be resold as-is, in raw source form,
-as a template itself.
+Wil je dit patroon hergebruiken voor een andere verzameling (bier, whisky,
+boeken, ...) of het ontwerp aanpassen? Zie de startprompt bovenaan
+`docs/BUILD_GUIDE.nl.md`.
