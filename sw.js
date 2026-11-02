@@ -1,4 +1,4 @@
-const CACHE_NAME = 'winecellar-v6-nl';
+const CACHE_NAME = 'winecellar-v7-nl';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -30,6 +30,7 @@ const ASSETS = [
   './js/render/wineDetail.js',
   './js/render/pairingModal.js',
   './js/regions.js',
+  './js/photos.js',
 ];
 
 self.addEventListener('install', (event) => {

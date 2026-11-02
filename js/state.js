@@ -2,6 +2,7 @@ import { DEFAULT_WINES } from './data/seedWines.js';
 import { generateId } from './utils.js';
 import { authHeaders } from './auth.js';
 import { cleanWineRegion } from './regions.js';
+import { savePhoto, removePhoto } from './photos.js';
 
 const STORAGE_KEY = 'winecellar-data';
 const API_URL = '/api/inventory';
@@ -138,7 +139,7 @@ export async function refreshFromServer() {
 }
 
 function normalizeWine(w) {
-  const clean = { ...w };
+  const { photoData, ...clean } = w; // de foto zelf hoort niet in de voorraadlijst
   cleanWineRegion(clean);
   return {
     ...clean,
@@ -154,6 +155,7 @@ export function adjustCount(id, delta) {
   item.quantity = Math.max(0, item.quantity + delta);
   if (item.quantity === 0) {
     state.inventory = state.inventory.filter((w) => w.id !== id);
+    if (item.hasPhoto) removePhoto(id);
   }
   persist();
 }
@@ -172,11 +174,37 @@ export function markDrunk(id) {
   });
   if (item.quantity === 0) {
     state.inventory = state.inventory.filter((w) => w.id !== id);
+    if (item.hasPhoto) removePhoto(id);
   }
   persist();
 }
 
+function setPhotoFields(item, dataUrl) {
+  item.hasPhoto = true;
+  item.photoV = Date.now();
+  savePhoto(item.id, item.photoV, dataUrl);
+}
+
+/** Zet of vervangt de flesfoto van een wijn. */
+export function attachPhoto(id, dataUrl) {
+  const item = state.inventory.find((x) => x.id === id);
+  if (!item || !dataUrl) return;
+  setPhotoFields(item, dataUrl);
+  persist();
+}
+
+/** Verwijdert de flesfoto van een wijn. */
+export function clearPhoto(id) {
+  const item = state.inventory.find((x) => x.id === id);
+  if (!item || !item.hasPhoto) return;
+  item.hasPhoto = false;
+  delete item.photoV;
+  removePhoto(id);
+  persist();
+}
+
 export function addWine(rawWine) {
+  const photo = rawWine.photoData || '';
   const w = normalizeWine(rawWine);
   const existing = state.inventory.find(
     (x) =>
@@ -197,6 +225,7 @@ export function addWine(rawWine) {
     state.inventory.push(created);
     result = { wine: created, isNew: true };
   }
+  if (photo && !result.wine.hasPhoto) setPhotoFields(result.wine, photo);
   persist();
   return result;
 }
@@ -209,6 +238,8 @@ export function updateWine(id, updates) {
 }
 
 export function deleteWine(id) {
+  const gone = state.inventory.find((x) => x.id === id);
+  if (gone && gone.hasPhoto) removePhoto(id);
   state.inventory = state.inventory.filter((x) => x.id !== id);
   persist();
 }

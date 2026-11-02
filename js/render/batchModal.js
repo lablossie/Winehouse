@@ -32,6 +32,7 @@ export function batchModalHTML(ui) {
       <div class="batch-row">
         <div class="batch-row-top">
           <span class="batch-row-status">&#10003; herkend</span>
+          ${b.photoData ? `<img class="batch-thumb" src="${b.photoData}" alt="">` : ''}
           <button class="batch-row-remove" data-action="remove-batch-item" data-index="${i}">&#10005;</button>
         </div>
         <div class="batch-mini-row">

@@ -1,4 +1,5 @@
 import { authHeaders } from './auth.js';
+import { makeThumbnail } from './photos.js';
 
 const MAX_IMAGES = 6;
 const MAX_DIMENSION = 1568;
@@ -77,6 +78,20 @@ export async function recognizeFromPhotos(files, mode) {
   }
   if (!Array.isArray(data.items) || data.items.length === 0) {
     throw new Error('Geen wijn herkend op de foto\'s. Probeer het opnieuw met een duidelijkere foto.');
+  }
+
+  if (mode === 'label') {
+    await Promise.all(
+      data.items.map(async (item) => {
+        try {
+          const idx = Number.isInteger(item.photoIndex) && images[item.photoIndex] ? item.photoIndex : 0;
+          const img = images[idx];
+          item.photoData = await makeThumbnail(`data:${img.mediaType};base64,${img.data}`, item.bottleBox);
+        } catch (e) {
+          item.photoData = '';
+        }
+      })
+    );
   }
 
   return data.items;

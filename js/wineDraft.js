@@ -17,5 +17,6 @@ export function toDraftItem(raw) {
     quantity: raw.quantity || 1,
     price: raw.price || 0,
     notes: '',
+    photoData: typeof raw.photoData === 'string' ? raw.photoData : '',
   };
 }

@@ -1,5 +1,6 @@
 import { escapeHtml } from '../utils.js';
 import { countryOptionsHTML, regionOptionsHTML } from '../regions.js';
+import { photoSrc } from '../photos.js';
 
 const CLASSIFICATION_OPTIONS = [
   'Q.b.A. trocken',
@@ -23,6 +24,19 @@ function classificationSelectHTML(current) {
 const COLOR_LABEL_NL = { White: 'Wit', 'Rosé': 'Rosé', Red: 'Rood' };
 function colorSelectHTML(current) {
   return COLOR_OPTIONS.map((k) => `<option value="${k}" ${current === k ? 'selected' : ''}>${escapeHtml(COLOR_LABEL_NL[k] || k)}</option>`).join('');
+}
+
+// Foto van de fles (klein plaatje): toevoegen, vervangen of weghalen.
+export function photoSlotHTML(src) {
+  return `
+    ${src ? `<img class="wine-photo-preview" src="${src}" alt="">` : '<div class="wine-photo-empty">&#127863;</div>'}
+    <div class="wine-photo-actions">
+      <label class="photo-upload-btn">
+        &#128247; ${src ? 'Foto vervangen' : 'Foto toevoegen'}
+        <input type="file" accept="image/*" data-wine-photo>
+      </label>
+      ${src ? '<button type="button" class="btn-secondary" data-action="remove-wine-photo">Foto weghalen</button>' : ''}
+    </div>`;
 }
 
 function photoPreviewStripHTML(previews) {
@@ -69,6 +83,10 @@ export function modalHTML(ui, state) {
 
         ${!isEdit ? photoUploadHTML(ui) : ''}
 
+        <div class="field">
+          <label>Foto van de fles</label>
+          <div class="wine-photo-slot" id="wine-photo-slot">${photoSlotHTML(isEdit ? photoSrc(item) : ui.newPhoto || '')}</div>
+        </div>
         <div class="field-row">
           <div class="field">
             <label>Land</label>

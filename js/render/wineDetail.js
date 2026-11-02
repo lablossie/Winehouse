@@ -1,5 +1,6 @@
 import { escapeHtml, formatEuro } from '../utils.js';
 import { ripeningInfo } from '../model.js';
+import { photoSrc } from '../photos.js';
 
 function hasClassification(classification) {
   return !!classification && !/not stated/i.test(classification);
@@ -25,6 +26,7 @@ export function renderWineDetail(wine) {
     <div class="detail-hero">
       <p class="eyebrow">${escapeHtml(wine.region)}, ${escapeHtml(wine.country)}</p>
       <div class="detail-hero-top">
+        ${photoSrc(wine) ? `<img class="detail-photo" src="${photoSrc(wine)}" alt="">` : ''}
         <div class="detail-hero-title">
           <div class="wine-name">${escapeHtml(wine.name)}</div>
           <div class="wine-meta-domein" style="margin-top:5px;">${escapeHtml(wine.estate)}</div>

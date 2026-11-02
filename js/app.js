@@ -1,4 +1,4 @@
-import { state, loadState, refreshFromServer, adjustCount, markDrunk, addWine, updateWine, deleteWine, resetData, setNav, setOwnerName } from './state.js';
+import { state, loadState, refreshFromServer, attachPhoto, clearPhoto, adjustCount, markDrunk, addWine, updateWine, deleteWine, resetData, setNav, setOwnerName } from './state.js';
 import { sumBottles, escapeHtml } from './utils.js';
 import { ripeningInfo } from './model.js';
 import { renderVoorraad } from './render/voorraad.js';
@@ -15,6 +15,8 @@ import { recognizeFromPhotos } from './photoRecognize.js';
 import { findWinePairing } from './winePairing.js';
 import { fetchWineEnrichment } from './wineEnrich.js';
 import { ensureUnlocked } from './auth.js';
+import { onPhotosChanged, makeThumbnail, fileToDataUrl, photoSrc } from './photos.js';
+import { photoSlotHTML } from './render/modal.js';
 import { OTHER, normalizeRegion, regionOptionsHTML } from './regions.js';
 
 const ui = {
@@ -30,6 +32,7 @@ const ui = {
   photoPreviews: [],
   batchModalOpen: false,
   batchItems: [],
+  newPhoto: '',
   detailId: null,
   pairingModalOpen: false,
   pairingQuery: '',
@@ -290,6 +293,7 @@ function openAddModal() {
   ui.modalMode = 'add';
   ui.editingId = null;
   ui.formDraft = {};
+  ui.newPhoto = '';
   ui.photoStatus = null;
   clearPhotoPreviews();
   ui.modalOpen = true;
@@ -304,6 +308,7 @@ function openEditModal(id) {
 }
 
 function closeModal() {
+  ui.newPhoto = '';
   ui.modalOpen = false;
   ui.modalMode = 'add';
   ui.editingId = null;
@@ -375,6 +380,7 @@ function submitWine() {
   }
 
   const wine = { country, region, estate, name, vintage, grapeVariety, color, sparkling, classification, quantity, price, notes };
+  if (ui.modalMode !== 'edit' && ui.newPhoto) wine.photoData = ui.newPhoto;
   if (ui.modalMode === 'edit') {
     updateWine(ui.editingId, wine);
   } else {
@@ -521,6 +527,11 @@ appEl.addEventListener('click', (e) => {
       ui.detailId = null;
       render();
       break;
+    case 'remove-wine-photo':
+      if (ui.modalMode === 'edit' && ui.editingId) clearPhoto(ui.editingId);
+      else ui.newPhoto = '';
+      refreshPhotoSlot();
+      break;
     case 'close-modal':
     case 'backdrop-close':
       closeModal();
@@ -608,8 +619,37 @@ function askCustomRegion() {
   return v || null;
 }
 
+function refreshPhotoSlot() {
+  const slot = document.getElementById('wine-photo-slot');
+  if (!slot) return;
+  const wine = ui.modalMode === 'edit' ? state.inventory.find((w) => w.id === ui.editingId) : null;
+  slot.innerHTML = photoSlotHTML(wine ? photoSrc(wine) : ui.newPhoto);
+}
+
+async function handleWinePhotoFile(file) {
+  try {
+    const thumb = await makeThumbnail(await fileToDataUrl(file), null);
+    if (ui.modalMode === 'edit' && ui.editingId) attachPhoto(ui.editingId, thumb);
+    else ui.newPhoto = thumb;
+    refreshPhotoSlot();
+  } catch (err) {
+    alert(err.message || 'Kon de foto niet verwerken.');
+  }
+}
+
+onPhotosChanged(() => {
+  if (ui.modalOpen || ui.batchModalOpen) return; // niet storen tijdens het invullen
+  render();
+});
+
 appEl.addEventListener('change', (e) => {
   const t = e.target;
+  if (t.type === 'file' && t.hasAttribute('data-wine-photo')) {
+    const file = t.files && t.files[0];
+    t.value = '';
+    if (file) handleWinePhotoFile(file);
+    return;
+  }
   if (t.id === 'f-country') {
     const region = document.getElementById('f-region');
     region.innerHTML = regionOptionsHTML(t.value, '', escapeHtml);

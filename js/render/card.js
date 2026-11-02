@@ -1,5 +1,6 @@
 import { escapeHtml, formatEuro } from '../utils.js';
 import { ripeningInfo } from '../model.js';
+import { photoSrc } from '../photos.js';
 
 function gaugeHTML(wine) {
   const r = ripeningInfo(wine);
@@ -37,16 +38,25 @@ function noteHTML(notes) {
   return `<div class="wine-note">&#128221; ${escapeHtml(notes)}</div>`;
 }
 
+function thumbHTML(wine) {
+  const src = photoSrc(wine);
+  if (!src) return '';
+  return `<img class="wine-thumb" src="${src}" alt="" loading="lazy">`;
+}
+
 export function cardHTML(wine, showEstate) {
   const id = escapeHtml(wine.id);
   return `
     <div class="card card-clickable" data-action="open-detail" data-id="${id}">
       <div class="card-top">
-        <div>
+        <div class="card-left">
+          ${thumbHTML(wine)}
+          <div class="card-info">
           <div class="wine-name">${escapeHtml(wine.name)}</div>
           <div class="wine-meta">${wine.vintage} · ${escapeHtml(wine.grapeVariety)} · ${formatEuro(wine.price)}</div>
           ${showEstate ? `<div class="wine-meta-domein">${escapeHtml(wine.estate)} · ${escapeHtml(wine.region)}, ${escapeHtml(wine.country)}</div>` : ''}
           ${noteHTML(wine.notes)}
+          </div>
         </div>
         <div class="card-top-right">
           <button class="edit-btn" data-action="open-edit" data-id="${id}" title="Bewerken">&#9998;</button>
