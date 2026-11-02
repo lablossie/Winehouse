@@ -1,9 +1,12 @@
+import { normalizeCountry, normalizeRegion } from './regions.js';
+
 const COLOR_OPTIONS = ['White', 'Rosé', 'Red'];
 
 export function toDraftItem(raw) {
+  const country = normalizeCountry(raw.country) || (raw.country ? 'Overig' : 'Duitsland');
   return {
-    country: raw.country || 'Duitsland',
-    region: raw.region || '',
+    country,
+    region: normalizeRegion(country, raw.region),
     estate: raw.estate || '',
     name: raw.name || '',
     vintage: raw.vintage || '',

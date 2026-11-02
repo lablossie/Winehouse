@@ -1,3 +1,4 @@
+import { regionListForPrompt, normalizeCountry, normalizeRegion } from '../js/regions.js';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-haiku-4-5';
 const MAX_SEARCHES = 3;
@@ -85,7 +86,7 @@ export default async function handler(req, res) {
     'flavorProfile (array van 4-7 korte Nederlandse smaak- of aromatermen zoals "Zwarte kers", "Kruidnagel", "Vanille", of een lege array [] als niets gevonden), ' +
     'estimatedPrice (number, average retail price per bottle in EUR with no currency symbol, e.g. 15.50, or 0 if you cannot find a reliable price), ' +
     'grapeVariety (the verified grape variety/blend if you found it with confidence, e.g. "Grenache, Syrah, Mourvèdre", or an empty string "" if not confident or nothing different from the given value), ' +
-    'region (the verified wine region/appellation if you found it with confidence, e.g. "Châteauneuf-du-Pape", or an empty string "" if not confident or nothing different from the given value).';
+    'region (the verified wine region, chosen EXACTLY from this list of allowed regions — appellations such as Chianti or Châteauneuf-du-Pape belong to their larger region, e.g. "Toscane" or "Rhône" — or an empty string "" if not confident, not in the list, or nothing different from the given value). Allowed regions: ' + regionListForPrompt(country) + '.';
 
   try {
     const claudeRes = await fetch(ANTHROPIC_API_URL, {
@@ -135,7 +136,7 @@ export default async function handler(req, res) {
         : [],
       estimatedPrice: Number.isFinite(estimatedPrice) && estimatedPrice > 0 ? estimatedPrice : 0,
       grapeVariety: stripCiteTags(typeof parsed.grapeVariety === 'string' ? parsed.grapeVariety : ''),
-      region: stripCiteTags(typeof parsed.region === 'string' ? parsed.region : ''),
+      region: normalizeRegion(normalizeCountry(country) || 'Overig', stripCiteTags(typeof parsed.region === 'string' ? parsed.region : '')),
     });
   } catch (e) {
     res.status(500).json({ error: e.message || 'Er ging iets mis bij het opzoeken van deze wijn.' });

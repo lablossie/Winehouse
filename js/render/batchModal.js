@@ -1,4 +1,5 @@
 import { escapeHtml } from '../utils.js';
+import { countryOptionsHTML, regionOptionsHTML } from '../regions.js';
 
 const COLOR_OPTIONS = ['White', 'Rosé', 'Red'];
 const COLOR_LABEL_NL = { White: 'Wit', 'Rosé': 'Rosé', Red: 'Rood' };
@@ -34,8 +35,8 @@ export function batchModalHTML(ui) {
           <button class="batch-row-remove" data-action="remove-batch-item" data-index="${i}">&#10005;</button>
         </div>
         <div class="batch-mini-row">
-          <div class="batch-mini-field"><label>Land</label><input data-batch-field="country" data-index="${i}" value="${escapeHtml(b.country)}"></div>
-          <div class="batch-mini-field"><label>Streek</label><input data-batch-field="region" data-index="${i}" value="${escapeHtml(b.region)}"></div>
+          <div class="batch-mini-field"><label>Land</label><select data-batch-field="country" data-index="${i}">${countryOptionsHTML(b.country, escapeHtml)}</select></div>
+          <div class="batch-mini-field"><label>Streek</label><select data-batch-field="region" data-index="${i}">${regionOptionsHTML(b.country, b.region, escapeHtml)}</select></div>
         </div>
         <div class="batch-mini-field"><label>Domein</label><input data-batch-field="estate" data-index="${i}" value="${escapeHtml(b.estate)}"></div>
         <div class="batch-mini-field"><label>Naam</label><input data-batch-field="name" data-index="${i}" value="${escapeHtml(b.name)}"></div>

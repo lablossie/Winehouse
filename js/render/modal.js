@@ -1,4 +1,5 @@
 import { escapeHtml } from '../utils.js';
+import { countryOptionsHTML, regionOptionsHTML } from '../regions.js';
 
 const CLASSIFICATION_OPTIONS = [
   'Q.b.A. trocken',
@@ -71,11 +72,11 @@ export function modalHTML(ui, state) {
         <div class="field-row">
           <div class="field">
             <label>Land</label>
-            <input id="f-country" value="${val('country', 'Duitsland')}">
+            <select id="f-country">${countryOptionsHTML(isEdit ? item.country : f.country || 'Duitsland', escapeHtml)}</select>
           </div>
           <div class="field">
             <label>Streek</label>
-            <input id="f-region" value="${val('region', 'Ahr')}">
+            <select id="f-region">${regionOptionsHTML(isEdit ? item.country : f.country || 'Duitsland', isEdit ? item.region : f.region !== undefined ? f.region : 'Ahr', escapeHtml)}</select>
           </div>
         </div>
         <div class="field">

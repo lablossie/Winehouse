@@ -1,6 +1,7 @@
 import { DEFAULT_WINES } from './data/seedWines.js';
 import { generateId } from './utils.js';
 import { authHeaders } from './auth.js';
+import { cleanWineRegion } from './regions.js';
 
 const STORAGE_KEY = 'winecellar-data';
 const API_URL = '/api/inventory';
@@ -63,8 +64,18 @@ function loadLocal() {
   return false;
 }
 
+// Brengt land/streek van alle bestaande wijnen terug op de vaste lijst.
+// Slaat alleen op als er echt iets veranderd is.
+function cleanupRegions() {
+  let changed = false;
+  for (const w of state.inventory) if (cleanWineRegion(w)) changed = true;
+  if (changed) persist();
+  return changed;
+}
+
 export async function loadState() {
   const hadLocal = loadLocal();
+  if (hadLocal) cleanupRegions();
 
   try {
     const res = await fetch(API_URL, { headers: authHeaders() });
@@ -82,6 +93,7 @@ export async function loadState() {
           state.history = remote.history || [];
           state.ownerName = remote.ownerName || state.ownerName || '';
           saveLocal();
+          cleanupRegions();
         }
         return;
       }
@@ -117,6 +129,7 @@ export async function refreshFromServer() {
       state.history = remote.history || [];
       state.ownerName = remote.ownerName || '';
       saveLocal();
+      cleanupRegions();
     }
     return changed;
   } catch (e) {
@@ -125,8 +138,10 @@ export async function refreshFromServer() {
 }
 
 function normalizeWine(w) {
+  const clean = { ...w };
+  cleanWineRegion(clean);
   return {
-    ...w,
+    ...clean,
     quantity: Math.max(0, Number(w.quantity) || 0),
     price: Number(w.price) || 0,
     vintage: Number(w.vintage) || new Date().getFullYear(),

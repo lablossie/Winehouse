@@ -15,6 +15,7 @@ import { recognizeFromPhotos } from './photoRecognize.js';
 import { findWinePairing } from './winePairing.js';
 import { fetchWineEnrichment } from './wineEnrich.js';
 import { ensureUnlocked } from './auth.js';
+import { OTHER, normalizeRegion, regionOptionsHTML } from './regions.js';
 
 const ui = {
   activeTab: 'stock',
@@ -233,8 +234,8 @@ async function handlePairingSubmit() {
 }
 
 function submitWine() {
-  const country = document.getElementById('f-country').value.trim() || 'Duitsland';
-  const region = document.getElementById('f-region').value.trim() || 'Ahr';
+  const country = document.getElementById('f-country').value || 'Duitsland';
+  const region = document.getElementById('f-region').value;
   const estate = document.getElementById('f-estate').value.trim();
   const name = document.getElementById('f-name').value.trim();
   const vintage = document.getElementById('f-vintage').value;
@@ -276,7 +277,8 @@ async function enrichWineAsync(id) {
     updates.price = data.estimatedPrice;
   }
   if (data.grapeVariety) updates.grapeVariety = data.grapeVariety;
-  if (data.region) updates.region = data.region;
+  const verified = normalizeRegion(wine.country, data.region);
+  if (verified) updates.region = verified;
   updateWine(id, updates);
   render();
 }
@@ -468,6 +470,7 @@ appEl.addEventListener('input', (e) => {
   }
   if (e.target.dataset && e.target.dataset.batchField) {
     const idx = Number(e.target.dataset.index);
+    if (e.target.tagName === 'SELECT' && (e.target.dataset.batchField === 'country' || e.target.dataset.batchField === 'region')) return; // afgehandeld in 'change'
     ui.batchItems[idx][e.target.dataset.batchField] = e.target.value;
     return;
   }
@@ -477,7 +480,37 @@ appEl.addEventListener('input', (e) => {
   }
 });
 
+// Vraagt bij "Anders…" om een eigen streek; geeft de nieuwe waarde of null.
+function askCustomRegion() {
+  const v = (window.prompt('Welke streek? (bv. een kleine streek die niet in de lijst staat)') || '').trim();
+  return v || null;
+}
+
 appEl.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'f-country') {
+    const region = document.getElementById('f-region');
+    region.innerHTML = regionOptionsHTML(t.value, '', escapeHtml);
+    return;
+  }
+  if (t.id === 'f-region' && t.value === OTHER) {
+    const custom = askCustomRegion();
+    t.innerHTML = regionOptionsHTML(document.getElementById('f-country').value, custom || '', escapeHtml);
+    return;
+  }
+  if (t.dataset && t.dataset.batchField === 'country') {
+    const item = ui.batchItems[Number(t.dataset.index)];
+    item.country = t.value;
+    item.region = normalizeRegion(item.country, item.region);
+    render();
+    return;
+  }
+  if (t.dataset && t.dataset.batchField === 'region') {
+    const item = ui.batchItems[Number(t.dataset.index)];
+    item.region = t.value === OTHER ? askCustomRegion() || '' : t.value;
+    render();
+    return;
+  }
   if (e.target.type === 'file' && e.target.dataset.photoMode) {
     // Snapshot as a plain array before clearing .value — some browsers
     // reuse the same live FileList instance, so clearing .value empties

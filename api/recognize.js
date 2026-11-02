@@ -1,3 +1,4 @@
+import { regionListForPrompt } from '../js/regions.js';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-haiku-4-5';
 const MAX_IMAGES = 6;
@@ -66,7 +67,10 @@ export default async function handler(req, res) {
     }
   }
 
-  const promptText = mode === 'receipt' ? RECEIPT_PROMPT : LABEL_PROMPT;
+  const REGION_RULE =
+    '\n\nIMPORTANT for country and region: use the exact Dutch country name from the list below. For region you MUST pick exactly one name from the list for that country (e.g. Chianti, Chianti Classico and Brunello all belong to "Toscane"; Sancerre belongs to "Loire"). If none of the listed regions fits or you are unsure, use "" for region. Never invent a region name or put an appellation in the region field. Allowed regions per country:\n' +
+    regionListForPrompt('');
+  const promptText = (mode === 'receipt' ? RECEIPT_PROMPT : LABEL_PROMPT) + REGION_RULE;
   const content = [
     ...images.map((img) => ({
       type: 'image',
