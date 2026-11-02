@@ -1,4 +1,4 @@
-const CACHE_NAME = 'winecellar-v5-nl';
+const CACHE_NAME = 'winecellar-v6-nl';
 const ASSETS = [
   './index.html',
   './manifest.json',

@@ -49,6 +49,127 @@ function totalValue() {
   return state.inventory.reduce((sum, w) => sum + w.quantity * Number(w.price || 0), 0);
 }
 
+// ---------------------------------------------------------------------------
+// Terugknop (Android) — elke "stap" in de app (tabblad, land/streek/domein,
+// wijn-detail, popups) is een stap in de browsergeschiedenis. Terug = 1 stap
+// terug. Op het beginscherm moet je twee keer kort na elkaar terug drukken om
+// de app te sluiten.
+// ---------------------------------------------------------------------------
+let histStack = []; // index 0 = "afsluit-wachtpost", index 1 = beginscherm, daarna dieper
+let exitArmedAt = 0;
+let toastEl = null;
+
+function currentSnapshot() {
+  const modal = ui.modalOpen || ui.batchModalOpen ? (ui.modalMode === 'edit' ? 'edit:' + ui.editingId : 'add') : ui.pairingModalOpen ? 'pairing' : '';
+  return {
+    activeTab: ui.activeTab,
+    level: state.nav.level,
+    country: state.nav.country,
+    region: state.nav.region,
+    estate: state.nav.estate,
+    detailId: ui.detailId,
+    modal,
+  };
+}
+const snapKey = (sn) => [sn.activeTab, sn.level, sn.country, sn.region, sn.estate, sn.detailId, sn.modal].join('|');
+
+function showExitToast() {
+  if (!toastEl) {
+    toastEl = document.createElement('div');
+    toastEl.style.cssText =
+      'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:9999;transition:opacity .2s;pointer-events:none;max-width:90%;text-align:center;';
+    toastEl.textContent = 'Druk nog een keer op terug om af te sluiten';
+    document.body.appendChild(toastEl);
+  }
+  toastEl.style.opacity = '1';
+  clearTimeout(showExitToast.t);
+  showExitToast.t = setTimeout(() => {
+    if (toastEl) toastEl.style.opacity = '0';
+  }, 2000);
+}
+
+function applySnapshot(sn) {
+  ui.activeTab = sn.activeTab;
+  setNav(sn.level, sn.country, sn.region, sn.estate);
+  ui.detailId = sn.detailId;
+  ui.modalOpen = false;
+  ui.modalMode = 'add';
+  ui.editingId = null;
+  ui.batchModalOpen = false;
+  ui.batchItems = [];
+  clearPhotoPreviews();
+  ui.pairingModalOpen = false;
+  ui.pairingStatus = null;
+  ui.pairingResults = [];
+}
+
+function syncHistory() {
+  const sn = currentSnapshot();
+  const key = snapKey(sn);
+  if (histStack.length === 0) {
+    try {
+      history.replaceState({ d: 0 }, '');
+      history.pushState({ d: 1 }, '');
+    } catch (e) {
+      return;
+    }
+    histStack = [null, sn];
+    return;
+  }
+  const top = histStack.length - 1;
+  if (histStack[top] && snapKey(histStack[top]) === key) {
+    histStack[top] = sn;
+    return;
+  }
+  // Staat dit scherm al eerder in de stapel? Dan gaan we daar naartoe terug
+  // (bv. het sluiten van een popup of terug naar het beginscherm).
+  for (let j = top - 1; j >= 1; j--) {
+    if (snapKey(histStack[j]) === key) {
+      histStack = histStack.slice(0, j + 1);
+      histStack[j] = sn;
+      history.go(j - top);
+      return;
+    }
+  }
+  histStack.push(sn);
+  history.pushState({ d: histStack.length - 1 }, '');
+}
+
+window.addEventListener('popstate', (e) => {
+  if (histStack.length === 0) return;
+  const d = e.state && typeof e.state.d === 'number' ? e.state.d : 0;
+  const top = histStack.length - 1;
+  if (d > top) {
+    history.go(top - d); // vooruit-knop: terug naar waar we waren
+    return;
+  }
+  if (d === 0) {
+    // Op het beginscherm op terug gedrukt.
+    const now = Date.now();
+    if (now - exitArmedAt < 2000) {
+      exitArmedAt = 0;
+      history.back(); // echt afsluiten
+      return;
+    }
+    exitArmedAt = now;
+    showExitToast();
+    histStack = histStack.slice(0, 2);
+    history.pushState({ d: 1 }, '');
+    if (snapKey(histStack[1]) !== snapKey(currentSnapshot())) {
+      applySnapshot(histStack[1]);
+      render();
+    }
+    return;
+  }
+  histStack = histStack.slice(0, d + 1);
+  const target = histStack[d];
+  if (snapKey(target) !== snapKey(currentSnapshot())) {
+    applySnapshot(target);
+    histStack[d] = currentSnapshot();
+    render();
+  }
+});
+
 function render() {
   const focused = document.activeElement;
   const preserveSearch = focused && focused.id === 'search-input';
@@ -157,6 +278,7 @@ function render() {
   if (activeTabEl) {
     activeTabEl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
+  syncHistory();
 }
 
 function clearPhotoPreviews() {
